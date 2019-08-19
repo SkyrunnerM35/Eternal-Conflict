@@ -1,0 +1,125 @@
+                                                                           | 77
+                                                                           
+OVERVIEW
+  In order to win the game, you must destroy your opponent's hull before he
+  destroys yours. Both your ship and the enemy ship have 20 hull points, 
+  which is protected by 100 armor points and 40 shield points; both the
+  armor and shield must be defeated before the hull can be damaged.
+
+RESISTANCES AND REGENERATION
+  There are three different types of damage in the game; kinetic, thermal, 
+  and electromagnetic. Shields and armor have different resistances to
+  different types of damage, while hulls do not resist damage at all.
+  Shields resist 50% of kinetic damage, 25% of thermal, and 0% of EM, while
+  armor resists 0% kinetic, 25% thermal, and 50% EM.
+
+  Shields automatically regenerate 2 points at the start of every turn, 
+  while armor must be manually repaired, using up your turn in the process.
+  Hulls cannot be repaired, so keep your shields and armor up.
+
+TURNS
+  Each turn is summarized as follows:
+    Shield Regen
+    Decision
+    Drones
+    Point-Defense
+
+**BREAK**
+
+SHIELD REGEN AND DECISION
+  At the start of each turn, your shields will regenerate 2 points if they
+  are damaged, as mentioned above. During each turn, you can do one of four
+  actions; fire weapons, repair your ship, attempt to dodge enemy fire, or
+  self-destruct.
+
+FIRE WEAPONS
+  Choosing to attack the enemy ship will then prompt you to use one of the
+  three weapons in your arsenal, each with their strengths and weaknesses.
+  If your enemy has active drones, you can choose to engage either the enemy
+  ship or a random drone in their swarm, but not both.
+
+RAILGUN
+  The railgun is a kinetic weapon that fires a single 250mm osmium slug.
+  It does 12 damage per hit before resistances, and as a kinetic weapon, 
+  it is strong against armor but weak against shields.
+
+BEAM LASER
+  The beam laser is a thermal weapon that fires a sustained beam to burn
+  through the enemy ship. It does 12 damage per hit before resistances and
+  is equally effective against both shields and armor. However, a railgun is
+  better against armor, while a plasma cannon is better against shields.
+
+PLASMA CANNON
+  The plasma cannon generates a cloud of superheated plasma contained in a
+  magnetic field that is fired towards the target. It does 12 EM damage
+  per hit and is thus strong against shields but weak against armor.
+
+**BREAK**
+
+ROTARY CANNON
+  A six-barreled Gatling weapon, the rotary cannon has a cyclic rate of
+  6000 rounds per minute and fires a burst of ten 20mm shells. Each shell
+  deals 1 kinetic damage (10 damage in total), which makes it slightly
+  weaker than the railgun, but hit chances for each shell are calculated
+  independently, which makes this weapon ideal for attempting to hit
+  targets with high evasion, as well as for disabling subsystems such as PD.
+  The weapon is also unique in that its critical hit chance is 10%, which is
+  twice that of the standard crit rate.
+
+DRONE SWARM
+  They say that unmanned vehicles are the future, and you're certainly
+  taking advantage. Your frigate carries five attack drones, which are
+  launched towards the enemy ship. Every turn, each drone will fire once at
+  the enemy ship, dealing 2 thermal damage each. Each drone only has 2 armor
+  and 1 hull, but they also have a 75% evasion rate, making them difficult
+  to hit. An active point-defense, however, will shoot down a drone every
+  turn with a 100% success rate.
+
+MISSILE LAUNCHER
+  Putting the brains in the projectile means you can take them out of the
+  gunner. The missile launcher fires a single radar-guided missile that
+  deals 15 thermal damage and hits with 100% accuracy regardless of the
+  enemy's evasion. However, if your enemy has an active PD, they will shoot
+  down every missile you fire at them. The launcher also has limited
+  ammunition; you get ten missiles, so use them wisely.
+
+**BREAK**
+
+CRITICAL HITS
+  By default, all weapons have a 5% chance to deal a critical, which deals
+  double damage compared to a normal shot.
+
+EVASION
+  Both your ship and the enemy's have a 15% evasion rate, which means that
+  your shot may miss the enemy, and vice versa.
+
+REPAIR SHIP
+  Choosing to repair your ship will instantly restore 10 armor points and
+  repair your point-defenses if they were damaged. Newly-repaired point-
+  defenses will require another turn to re-activate.
+
+EVASIVE MANEUVERS
+  Choosing to try and dodge enemy fire will double your evasion rate to 30%
+  for a single turn.
+
+SELF-DESTRUCT
+  Choosing to self-destruct will overload your reactor and instantly destroy
+  your ship. This will count as a defeat and quit the game.
+
+**BREAK**
+
+DRONES
+  If you have active drones, they will attack the enemy ship following your
+  decision. Each active drone will fire once.
+
+POINT-DEFENSE
+  Your point-defense guns, while active, will protect you from enemy
+  missiles. Moreover, if your enemy has active drones, they will shoot down
+  a random drone per turn right after your drones attack the enemy. It
+  should be noted that any damage to your armor or hull will have a 20%
+  chance of disabling your PD.
+
+TURN END
+  After your turn ends, the enemy ship will take their turn, after which it
+  will be your turn again. This repeats until either your ship or the enemy
+  ship is destroyed.

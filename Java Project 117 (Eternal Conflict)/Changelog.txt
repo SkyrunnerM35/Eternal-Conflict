@@ -1,0 +1,34 @@
+0.3.1 alpha 8/02/2019
+ * Finished implementing lore, both a full and abridged version.
+ * Added ability to view changelog in-game.
+
+0.3.0 alpha 8/01/2019
+ * Implemented random crits, which deal double damage. Now the game is FaIr AnD bAlAnCeD.
+ * Added some lore, but still a work-in-progress.
+
+0.2.4 alpha 8/01/2019
+ * Implemented lore and started work on the backstory. Still a work in progress.
+
+0.2.3 alpha 7/30/2019
+ * Implemented proper number formatting; most floating-point values will now print to two decimal places,
+ * while decimal points now align. Everything should look nicer now.
+ * Lore (still) coming soon.
+
+0.2.2 alpha 7/30/2019
+ * Point-defenses now need a turn to re-activate after getting repaired. What this means is that your PD
+ * will not engage drones or missiles in the same turn when you repair them.
+ * Lore coming soon.
+ 
+0.2.1 alpha	7/29/2019
+ * Added Drone Swarm, for both player and enemy use.
+ * Enemy ship now has a Missile Launcher as well.
+ * Yes, the enemy ship now has five weapons, while you still have three. Deal with it.
+ 
+0.2.0 alpha 7/29/2019
+ * Added Beam Laser and Missile Launcher.
+ * Added option to select weapon loadout, up to three weapons.
+ * Added point-defense mechanics.
+ * Drones coming soon.
+ 
+0.1.0 alpha	7/28/2019
+ * Created game.
