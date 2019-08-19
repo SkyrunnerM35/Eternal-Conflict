@@ -1,5 +1,5 @@
 # Eternal-Conflict
-A turn-based, text-based space combat game.
+A turn-based, text-based space combat game. To launch the game, run EternalConflict.java.
 
 @author Michael Yang
 
