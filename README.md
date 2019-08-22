@@ -3,8 +3,8 @@ A turn-based, text-based space combat game. To launch the game, run EternalConfl
 
 Author: Michael Yang
 
-Version: 0.3.1 alpha
+Version: 0.4.0 alpha
 
 Since: 7/28/2019
 
-Last updated: 8/02/2019
+Last updated: 8/21/2019
