@@ -290,7 +290,7 @@ public class EternalConflict {
 					System.out.println("  yours seem to be disabled at this moment. Seeking to rectify this, you");
 					System.out.println("  order a team to check out your shield projector and get it functioning");
 					System.out.println("  again.");
-					System.out.println("    Your Shieldd Projector Has Been Repaired (One Turn Needed to Re-Activate)");
+					System.out.println("    Your Shield Projector Has Been Repaired (One Turn Needed to Re-Activate)");
 					player.toggleShieldRepair();
 					break;
 				}
@@ -342,19 +342,43 @@ public class EternalConflict {
 			System.out.println("  took advantage of the last chance, the situation changed and now the enemy");
 			System.out.println("  ship is in position to act.");
 			Prompt.getString("\n  Press ENTER to continue");
-			if(enemy.getArmor() <= 25 && Math.random() < .25) {
-				System.out.println("\nREPAIR SHIP");
-				System.out.println("  The enemy ship doesn't seem to be doing much; suspicious, you observe");
-				System.out.println("  your opponent more closely. You notice the sparks of welding torches and");
-				System.out.println("  the movement of nanites on their frigate; they seem to be concerned about");
-				System.out.println("  their survival.");
-				System.out.println("    Enemy Armor  -  10 Repair");
-				enemy.healArmor(10);
-				if(!enemy.getPDRepairStatus() && !enemy.getPDState()) {
+			if(Math.random() < .35 && (enemy.getArmor() <= 25 || !enemy.getPDState() || !enemy.getEngineState() || !enemy.getShieldState())) {
+				if(enemy.getArmor() <= 25) {
+					System.out.println("\nREPAIR ARMOR");
+					System.out.println("  The enemy ship doesn't seem to be doing much; suspicious, you observe");
+					System.out.println("  your opponent more closely. You notice the sparks of welding torches and");
+					System.out.println("  the movement of nanites on their frigate; they seem to be concerned about");
+					System.out.println("  their survival.");
+					System.out.println("    Enemy Armor  -  10 Repair");
+					enemy.healArmor(10);
+				} else if(!enemy.getShieldRepairStatus() && !enemy.getShieldState()) {
+					System.out.println("\nREPAIR SHIELDS");
+					System.out.println("  The enemy ship doesn't seem to be doing much; suspicious, you observe");
+					System.out.println("  your opponent more closely. You notice the sparks of welding torches and");
+					System.out.println("  the movement of nanites on their frigate; they seem to be concerned about");
+					System.out.println("  their survival.");
+					System.out.println("    Enemy Shield Projector Has Been Repaired (One Turn Needed to Re-Activate)");
+					enemy.toggleShieldRepair();
+				} else if(!enemy.getPDRepairStatus() && !enemy.getPDState()) {
+					System.out.println("\nREPAIR PD");
+					System.out.println("  The enemy ship doesn't seem to be doing much; suspicious, you observe");
+					System.out.println("  your opponent more closely. You notice the sparks of welding torches and");
+					System.out.println("  the movement of nanites on their frigate; they seem to be concerned about");
+					System.out.println("  their survival.");
 					System.out.println("    Enemy Point-Defenses Have Been Repaired (One Turn Needed to Re-Activate)");
 					enemy.togglePDRepair();
+				} else if(!enemy.getEngineRepairStatus() && !enemy.getEngineState()) {
+					System.out.println("\nREPAIR ENGINES");
+					System.out.println("  The enemy ship doesn't seem to be doing much; suspicious, you observe");
+					System.out.println("  your opponent more closely. You notice the sparks of welding torches and");
+					System.out.println("  the movement of nanites on their frigate; they seem to be concerned about");
+					System.out.println("  their survival.");
+					System.out.println("    Enemy Engines Have Been Repaired (One Turn Needed to Re-Activate)");
+					enemy.toggleEngineRepair();
+				} else {
+					System.out.println("    THIS MESSAGE SHOULD NEVER APPEAR");
 				}
-			} else if(enemy.getShield() <= 15 && Math.random() < .20) {
+			} else if(Math.random() < .20 && enemy.getEngineState() && enemy.getShield() <= 15) {
 				System.out.println("\nEVASIVE MANEUVERS");
 				System.out.println("  You notice your adversary maneuver his ship in a much more erratic manner.");
 				System.out.println("  Landing your next shot will be tricky.");
