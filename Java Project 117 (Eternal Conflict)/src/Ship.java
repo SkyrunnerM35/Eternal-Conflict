@@ -8,7 +8,7 @@ public class Ship extends Craft {
 	private String[] weapons;
 	private ArrayList<Drone> drones;
 	private boolean dronesLaunched;
-	private boolean justRepaired;
+	private boolean pdJustRepaired;
 	
 	public Ship(double hullI, double armorI, double shieldI, double shieldRegenI, double[] armorResistI, double[] shieldResistI, double evasionI, int[] munitionsI, String[] weaponsI) {
 		super(hullI, armorI, shieldI, shieldRegenI, armorResistI, shieldResistI, evasionI);
@@ -19,7 +19,7 @@ public class Ship extends Craft {
 		drones = new ArrayList<Drone>();
 		setDrones(5);
 		dronesLaunched = false;
-		justRepaired = false;
+		pdJustRepaired = false;
 	}
 	
 	public void toggleDodging() {
@@ -99,18 +99,18 @@ public class Ship extends Craft {
 		}
 	}
 	
-	public boolean getRepairStatus() {
-		return justRepaired;
+	public boolean getPDRepairStatus() {
+		return pdJustRepaired;
 	}
 	
-	public void toggleRepair() {
-		justRepaired = !justRepaired;
+	public void togglePDRepair() {
+		pdJustRepaired = !pdJustRepaired;
 	}
 	
 	public void repairPD() {
-		if(justRepaired && !getPDState()) {
+		if(pdJustRepaired && !getPDState()) {
 			togglePD();
-			toggleRepair();
+			togglePDRepair();
 		}
 	}
 	

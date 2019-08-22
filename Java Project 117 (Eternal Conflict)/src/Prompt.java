@@ -120,7 +120,7 @@
 		return term;
 	}
 	
-		public static char getChar(String ask, String possible) {
+	public static char getChar(String ask, String possible) {
 		boolean invalid = true;
 		char term = ' ';
 		do {
