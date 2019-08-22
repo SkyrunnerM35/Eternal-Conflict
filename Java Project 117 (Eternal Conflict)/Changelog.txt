@@ -1,8 +1,15 @@
 0.4.0 alpha 8/21/2019
  * Added engines and shields as subsystems (alongside PD), which can be damaged via enemy fire.
  * Repairing your ship now gives you the option to repair a single damaged subsystem, or your armor.
+ * Repairing armor now restores 15 health, from 10.
  * Critical hits now double the chance of damaging a subsystem.
  * Subsystem damage rate reduced to 10%, from 20%.
+ * Added heat as a new mechanic.
+ * In general, thermal weapons add the most heat, followed by EM, followed by kinetic. However, thermal
+   weapons also tend to add heat to the target ship.
+ * Option to shut down systems and bleed off more heat than usual, but this uses up the turn.
+ * An overheating ship must shut down its systems; the player can choose to override this, but at a 20%
+   chance of destroying their ship.
 
 0.3.1 alpha 8/02/2019
  * Finished implementing lore, both a full and abridged version.
@@ -17,12 +24,12 @@
 
 0.2.3 alpha 7/30/2019
  * Implemented proper number formatting; most floating-point values will now print to two decimal places,
- * while decimal points now align. Everything should look nicer now.
+   while decimal points now align. Everything should look nicer now.
  * Lore (still) coming soon.
 
 0.2.2 alpha 7/30/2019
  * Point-defenses now need a turn to re-activate after getting repaired. What this means is that your PD
- * will not engage drones or missiles in the same turn when you repair them.
+   will not engage drones or missiles in the same turn when you repair them.
  * Lore coming soon.
  
 0.2.1 alpha 7/29/2019

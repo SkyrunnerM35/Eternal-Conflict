@@ -17,29 +17,44 @@ RESISTANCES AND REGENERATION
   long as your shield projector is undamaged), while armor must be
   manually repaired, using up your turn in the process. Hulls cannot be
   repaired, so keep your shields and armor up.
+  
+HEAT
+  Both your ship and the enemy ship have 100 heat capacity, and most weapons
+  will generate heat when fired. Generally speaking, thermal weapons
+  generate the most heat, followed by EM, followed by kinetic. However, 
+  thermal weapons also add heat to the target ship. Your ship's cooling
+  system will remove 5 heat at the start of each turn, and you can use your
+  turn to shut down your ship's systems, thus removing another 20 heat.
+  An overheating ship must undergo an automatic shutdown, forfeiting the
+  turn. However, the player can choose to override this shutdown with a 20%
+  chance of catastrophic failure.
+
+**BREAK**
 
 TURNS
   Each turn is summarized as follows:
     Shield Regen
+    Ship Cooling
     Subsystem Re-Activation
     Decision
     Drones
     Point-Defense
 
-**BREAK**
-
-SHIELD REGEN, SUBSYSTEM ACTIVATION, AND DECISION
+SHIELD REGEN, SHIP COOLING, SUBSYSTEM ACTIVATION, AND DECISION
   At the start of each turn, your shields will regenerate 2 points if they
-  are damaged, as mentioned above. Moreover, if any subsystems were
-  repaired in the previous turn, they will re-activate in this turn. During
-  each turn, you can do one of four actions; fire weapons, repair your ship,
-  attempt to dodge enemy fire, or self-destruct.
+  are damaged, as mentioned above. Meanwhile, your onboard cooling systems
+  will remove 5 heat. Moreover, if any subsystems were repaired in the
+  previous turn, they will re-activate in this turn. During each turn, you
+  can do one of four actions; fire weapons, repair your ship, attempt to
+  dodge enemy fire, shut down your systems, or self-destruct.
 
 FIRE WEAPONS
   Choosing to attack the enemy ship will then prompt you to use one of the
   three weapons in your arsenal, each with their strengths and weaknesses.
   If your enemy has active drones, you can choose to engage either the enemy
   ship or a random drone in their swarm, but not both.
+  
+**BREAK**
 
 RAILGUN
   The railgun is a kinetic weapon that fires a single 250mm osmium slug. It
@@ -103,15 +118,25 @@ SUBSYSTEM DAMAGE
   crippled engine will set your evasion to zero and prevent you from
   performing evasive maneuvers, and a damaged shield projector will disable
   your shield regeneration.
+  
+**BREAK**
 
 REPAIR SHIP
   Choosing to repair your ship will give you the option to repair either
-  your armor (restoring 10 points), or a damaged subsystem. All subsystems
+  your armor (restoring 15 points), or a damaged subsystem. All subsystems
   require another turn to re-activate after being repaired.
 
 EVASIVE MANEUVERS
   Choosing to try and dodge enemy fire will double your evasion rate to 30%
   for a single turn.
+
+SHUT DOWN SYSTEMS
+  Shutting down your ship's systems will disable all onboard systems except
+  for critical ones such as shields, engines, and life support. As your ship
+  will not generate as much heat as it does during normal operation, your
+  cooling system will be able to remove more heat than usual; specifically,
+  they will remove an additional 20 heat. However, this will use up the
+  turn.
 
 SELF-DESTRUCT
   Choosing to self-destruct will overload your reactor and instantly destroy

@@ -4,8 +4,15 @@
  * 0.4.0 alpha 8/21/2019
  * Added engines and shields as subsystems (alongside PD), which can be damaged via enemy fire.
  * Repairing your ship now gives you the option to repair a single damaged subsystem, or your armor.
+ * Repairing armor now restores 15 health, from 10.
  * Critical hits now double the chance of damaging a subsystem.
  * Subsystem damage rate reduced to 10%, from 20%.
+ * Added heat as a new mechanic.
+ * In general, thermal weapons add the most heat, followed by EM, followed by kinetic. However, thermal
+ * weapons also tend to add heat to the target ship.
+ * Option to shut down systems and bleed off more heat than usual, but this uses up the turn.
+ * An overheating ship must shut down its systems; the player can choose to override this, but at a 20%
+ * chance of destroying their ship.
  * 
  * @author Michael Yang
  * @version 0.4.0 alpha
@@ -61,8 +68,8 @@ public class EternalConflict {
 		standardEvasion = .15;
 		standardCrit = .05;
 		standardSubDamage = .1;
-		player = new Ship(20, 100, 40, 2, new double[] {0, .25, .5, 0}, new double[] {.5, .25, 0, 0}, standardEvasion, new int[1], null);
-		enemy = new Ship(20, 100, 40, 2, new double[] {0, .25, .5, 0}, new double[] {.5, .25, 0, 0}, standardEvasion, new int[1], new String[] {"RG", "PL", "RC", "DN", "ML"});
+		player = new Ship(20, 100, 40, 2, new double[] {0, .25, .5, 0}, new double[] {.5, .25, 0, 0}, standardEvasion, 100, 5, new int[1], null);
+		enemy = new Ship(20, 100, 40, 2, new double[] {0, .25, .5, 0}, new double[] {.5, .25, 0, 0}, standardEvasion, 100, 5, new int[1], new String[] {"RG", "PL", "RC", "DN", "ML"});
 		enemy.setMunitions(0, 10);
 		enemy.setDrones(5);
 	}
@@ -226,86 +233,116 @@ public class EternalConflict {
 	
 	public void beginGame() {
 		int choice = 0;
+		boolean overheat = true;
+		boolean override = false;
 		boolean suicide = false;
+		boolean overheatFailure = false;
 		loadWeapons();
 		do {
-			player.revertEvasion();
-			player.regenShield();
-			repairSubsystems(player);
-			printPlayerInfo();
-			printEnemyInfo();
-			choice = makeDecision();
-			switch(choice) {
-			case 1:
-				choice = 1;
-				if(enemy.dronesActive()) {
-					choice = chooseTarget();
+			startOfTurn(player);
+			overheat = false;
+			override = false;
+			if(player.getHeat() > player.getHeatCapacity()) {
+				overheat = true;
+				override = overheatDecision();
+			}
+			if(override) {
+				if(Math.random() < .2) {
+					overheatFailure = true;
+					override = false;
 				}
+			} else if(overheat) {
+				System.out.println("\nSHUT DOWN SYSTEMS");
+				System.out.println("  Your ship's automatic shutdown triggers, disabling all onboard systems");
+				System.out.println("  save for critical ones such as shields and life support. You lament losing");
+				System.out.println("  your chance to act, but as the alternative could entail destruction of");
+				System.out.println("  your ship, you deem this to be acceptable.");
+				System.out.println("    Your Ship    - -20 Heat");
+				player.removeHeat(20);
+			}
+			if(!overheat || override) {
+				choice = makeDecision();
 				switch(choice) {
 				case 1:
-					do {
-						choice = selectWeapon(1);
-					} while(!attackShip(enemy, choice - 1));
-					break;
-				case 2:
-					do {
-						choice = selectWeapon(2);
-					} while(!attackShip(enemy.getDrone((int)(Math.random() * enemy.getActiveDrones())), choice - 1));
-					enemy.removeDestroyedDrones();
-					if(enemy.dronesActive() && enemy.getActiveDrones() <= 0) {
-						enemy.toggleDrones();
+					choice = 1;
+					if(enemy.dronesActive()) {
+						choice = chooseTarget();
+					}
+					switch(choice) {
+					case 1:
+						do {
+							choice = selectWeapon(1);
+						} while(!attackShip(enemy, choice - 1));
+						break;
+					case 2:
+						do {
+							choice = selectWeapon(2);
+						} while(!attackShip(enemy.getDrone((int)(Math.random() * enemy.getActiveDrones())), choice - 1));
+						enemy.removeDestroyedDrones();
+						if(enemy.dronesActive() && enemy.getActiveDrones() <= 0) {
+							enemy.toggleDrones();
+						}
+						break;
 					}
 					break;
-				}
-				break;
-			case 2:
-				choice = chooseRepairTarget();
-				switch(choice) {
-				case 1:
-					System.out.println("\nREPAIR ARMOR");
-					System.out.println("  You send a team to scour your ship's armor for any damage, making repairs");
-					System.out.println("  along the way. Half the battle is keeping your ship together, after all.");
-					System.out.println("    Your Armor   -  10 Repair");
-					player.healArmor(10);
-					break;
 				case 2:
-					System.out.println("\nREPAIR PD");
-					System.out.println("  You send a team to check on your point-defenses, ordering them to make any");
-					System.out.println("  necessary repairs. Your adversary may be packing drones or missiles, after");
-					System.out.println("  all, and you want to make sure you're protected against them.");
-					System.out.println("    Your Point-Defenses Have Been Repaired (One Turn Needed to Re-Activate)");
-					player.togglePDRepair();
+					choice = chooseRepairTarget();
+					switch(choice) {
+					case 1:
+						System.out.println("\nREPAIR ARMOR");
+						System.out.println("  You send a team to scour your ship's armor for any damage, making repairs");
+						System.out.println("  along the way. Half the battle is keeping your ship together, after all.");
+						System.out.println("    Your Armor   -  15 Repair");
+						player.healArmor(15);
+						break;
+					case 2:
+						System.out.println("\nREPAIR PD");
+						System.out.println("  You send a team to check on your point-defenses, ordering them to make any");
+						System.out.println("  necessary repairs. Your adversary may be packing drones or missiles, after");
+						System.out.println("  all, and you want to make sure you're protected against them.");
+						System.out.println("    Your Point-Defenses Have Been Repaired (One Turn Needed to Re-Activate)");
+						player.togglePDRepair();
+						break;
+					case 3:
+						System.out.println("\nREPAIR ENGINES");
+						System.out.println("  You order a repair team to get your engines back in working order. You");
+						System.out.println("  seem to be getting sick of giving your enemy easy hits, and want to be");
+						System.out.println("  able to start dodging shots again.");
+						System.out.println("    Your Engines Have Been Repaired (One Turn Needed to Re-Activate)");
+						player.toggleEngineRepair();
+						break;
+					case 4:
+						System.out.println("\nREPAIR SHIELDS");
+						System.out.println("  The shields are the first line of defense on any ship, but unfortunately,");
+						System.out.println("  yours seem to be disabled at this moment. Seeking to rectify this, you");
+						System.out.println("  order a team to check out your shield projector and get it functioning");
+						System.out.println("  again.");
+						System.out.println("    Your Shield Projector Has Been Repaired (One Turn Needed to Re-Activate)");
+						player.toggleShieldRepair();
+						break;
+					}
 					break;
 				case 3:
-					System.out.println("\nREPAIR ENGINES");
-					System.out.println("  You order a repair team to get your engines back in working order. You");
-					System.out.println("  seem to be getting sick of giving your enemy easy hits, and want to be");
-					System.out.println("  able to start dodging shots again.");
-					System.out.println("    Your Engines Have Been Repaired (One Turn Needed to Re-Activate)");
-					player.toggleEngineRepair();
+					System.out.println("\nEVASIVE MANEUVERS");
+					System.out.println("  Ordering your crew to hold on tight, you divert additional power to your");
+					System.out.println("  maneuvering thrusters in preparation for incoming fire.");
+					System.out.println("    Your Evasion Rate is Doubled for One Turn");
+					player.setEvasion(2 * player.getEvasion());
 					break;
 				case 4:
-					System.out.println("\nREPAIR SHIELDS");
-					System.out.println("  The shields are the first line of defense on any ship, but unfortunately,");
-					System.out.println("  yours seem to be disabled at this moment. Seeking to rectify this, you");
-					System.out.println("  order a team to check out your shield projector and get it functioning");
-					System.out.println("  again.");
-					System.out.println("    Your Shield Projector Has Been Repaired (One Turn Needed to Re-Activate)");
-					player.toggleShieldRepair();
+					System.out.println("\nSHUT DOWN SYSTEMS");
+					System.out.println("  Opting not to make a move, you shut down all systems aboard your ship save");
+					System.out.println("  for critical ones such as shields and life support. This will allow your");
+					System.out.println("  onboard cooling systems to bleed off more heat than usual, but will cost");
+					System.out.println("  you your chance to act.");
+					System.out.println("    Your Ship    - -20 Heat");
+					player.removeHeat(20);
+					break;
+				case 5:
+					player.setHull(0);
+					suicide = true;
 					break;
 				}
-				break;
-			case 3:
-				System.out.println("\nEVASIVE MANEUVERS");
-				System.out.println("  Ordering your crew to hold on tight, you divert additional power to your");
-				System.out.println("  maneuvering thrusters in preparation for incoming fire.");
-				System.out.println("    Your Evasion Rate is Doubled for One Turn");
-				player.setEvasion(2 * player.getEvasion());
-				break;
-			case 4:
-				player.setHull(0);
-				suicide = true;
-				break;
 			}
 			if(player.dronesActive()) {
 				System.out.println("\nDRONES");
@@ -329,63 +366,70 @@ public class EternalConflict {
 					enemy.toggleDrones();
 				}
 			}
-			if(suicide || enemy.getHull() <= 0) {
+			if(suicide || overheatFailure || enemy.getHull() <= 0) {
 				break;
 			}
 			Prompt.getString("\n  Press ENTER to continue");
-			repairSubsystems(enemy);
-			printPlayerInfo();
-			printEnemyInfo();
-			enemy.revertEvasion();
-			enemy.regenShield();
+			startOfTurn(enemy);
 			System.out.println("\n  Opportunities come and go quickly in the heat of battle; the moment you");
 			System.out.println("  took advantage of the last chance, the situation changed and now the enemy");
 			System.out.println("  ship is in position to act.");
 			Prompt.getString("\n  Press ENTER to continue");
-			if(Math.random() < .35 && (enemy.getArmor() <= 25 || !enemy.getPDState() || !enemy.getEngineState() || !enemy.getShieldState())) {
-				if(enemy.getArmor() <= 25) {
-					System.out.println("\nREPAIR ARMOR");
-					System.out.println("  The enemy ship doesn't seem to be doing much; suspicious, you observe");
-					System.out.println("  your opponent more closely. You notice the sparks of welding torches and");
-					System.out.println("  the movement of nanites on their frigate; they seem to be concerned about");
-					System.out.println("  their survival.");
-					System.out.println("    Enemy Armor  -  10 Repair");
-					enemy.healArmor(10);
-				} else if(!enemy.getShieldRepairStatus() && !enemy.getShieldState()) {
-					System.out.println("\nREPAIR SHIELDS");
-					System.out.println("  The enemy ship doesn't seem to be doing much; suspicious, you observe");
-					System.out.println("  your opponent more closely. You notice the sparks of welding torches and");
-					System.out.println("  the movement of nanites on their frigate; they seem to be concerned about");
-					System.out.println("  their survival.");
-					System.out.println("    Enemy Shield Projector Has Been Repaired (One Turn Needed to Re-Activate)");
-					enemy.toggleShieldRepair();
-				} else if(!enemy.getPDRepairStatus() && !enemy.getPDState()) {
-					System.out.println("\nREPAIR PD");
-					System.out.println("  The enemy ship doesn't seem to be doing much; suspicious, you observe");
-					System.out.println("  your opponent more closely. You notice the sparks of welding torches and");
-					System.out.println("  the movement of nanites on their frigate; they seem to be concerned about");
-					System.out.println("  their survival.");
-					System.out.println("    Enemy Point-Defenses Have Been Repaired (One Turn Needed to Re-Activate)");
-					enemy.togglePDRepair();
-				} else if(!enemy.getEngineRepairStatus() && !enemy.getEngineState()) {
-					System.out.println("\nREPAIR ENGINES");
-					System.out.println("  The enemy ship doesn't seem to be doing much; suspicious, you observe");
-					System.out.println("  your opponent more closely. You notice the sparks of welding torches and");
-					System.out.println("  the movement of nanites on their frigate; they seem to be concerned about");
-					System.out.println("  their survival.");
-					System.out.println("    Enemy Engines Have Been Repaired (One Turn Needed to Re-Activate)");
-					enemy.toggleEngineRepair();
-				} else {
-					System.out.println("    THIS MESSAGE SHOULD NEVER APPEAR");
-				}
-			} else if(Math.random() < .20 && enemy.getEngineState() && enemy.getShield() <= 15) {
-				System.out.println("\nEVASIVE MANEUVERS");
-				System.out.println("  You notice your adversary maneuver his ship in a much more erratic manner.");
-				System.out.println("  Landing your next shot will be tricky.");
-				System.out.println("    Enemy Evasion Rate is Doubled for One Turn");
-				enemy.setEvasion(2 * enemy.getEvasion());
+			if(enemy.getHeat() > enemy.getHeatCapacity()) {
+				System.out.println("\nSHUT DOWN SYSTEMS");
+				System.out.println("  Your adversary doesn't seem to be acting on their opportunity; running a");
+				System.out.println("  scan on their ship, you notice above-average onboard temperatures, as well");
+				System.out.println("  as most systems save for critical ones having been shut down. The enemy");
+				System.out.println("  ship must've overheated during the engagement, and has shut down their");
+				System.out.println("  systems to bleed off heat.");
+				System.out.println("    Enemy Ship   - -20 Heat");
+				enemy.removeHeat(20);
 			} else {
-				underAttack(enemy);
+				if(Math.random() < .35 && (enemy.getArmor() <= 25 || !enemy.getPDState() || !enemy.getEngineState() || !enemy.getShieldState())) {
+					if(enemy.getArmor() <= 25) {
+						System.out.println("\nREPAIR ARMOR");
+						System.out.println("  The enemy ship doesn't seem to be doing much; suspicious, you observe");
+						System.out.println("  your opponent more closely. You notice the sparks of welding torches and");
+						System.out.println("  the movement of nanites on their frigate; they seem to be concerned about");
+						System.out.println("  their survival.");
+						System.out.println("    Enemy Armor  -  15 Repair");
+						enemy.healArmor(15);
+					} else if(!enemy.getShieldRepairStatus() && !enemy.getShieldState()) {
+						System.out.println("\nREPAIR SHIELDS");
+						System.out.println("  The enemy ship doesn't seem to be doing much; suspicious, you observe");
+						System.out.println("  your opponent more closely. You notice a quick pulse of their shields; ");
+						System.out.println("  they must've repaired their shield projector, though you deduce you have");
+						System.out.println("  some time before they fully re-activate.");
+						System.out.println("    Enemy Shield Projector Has Been Repaired (One Turn Needed to Re-Activate)");
+						enemy.toggleShieldRepair();
+					} else if(!enemy.getPDRepairStatus() && !enemy.getPDState()) {
+						System.out.println("\nREPAIR PD");
+						System.out.println("  The enemy ship doesn't seem to be doing much; suspicious, you observe");
+						System.out.println("  your opponent more closely. You notice clusters of nanites swarm around");
+						System.out.println("  their point-defense turrets; they seem to want to get their PD online");
+						System.out.println("  again.");
+						System.out.println("    Enemy Point-Defenses Have Been Repaired (One Turn Needed to Re-Activate)");
+						enemy.togglePDRepair();
+					} else if(!enemy.getEngineRepairStatus() && !enemy.getEngineState()) {
+						System.out.println("\nREPAIR ENGINES");
+						System.out.println("  The enemy ship doesn't seem to be doing much; suspicious, you observe");
+						System.out.println("  your opponent more closely. You notice the sparks of welding torches");
+						System.out.println("  clustered towards the rear of their ship; they appear to be repairing");
+						System.out.println("  their engines.");
+						System.out.println("    Enemy Engines Have Been Repaired (One Turn Needed to Re-Activate)");
+						enemy.toggleEngineRepair();
+					} else {
+						System.out.println("    THIS MESSAGE SHOULD NEVER APPEAR");
+					}
+				} else if(Math.random() < .20 && enemy.getEngineState() && enemy.getShield() <= 15) {
+					System.out.println("\nEVASIVE MANEUVERS");
+					System.out.println("  You notice your adversary maneuver his ship in a much more erratic manner.");
+					System.out.println("  Landing your next shot will be tricky.");
+					System.out.println("    Enemy Evasion Rate is Doubled for One Turn");
+					enemy.setEvasion(2 * enemy.getEvasion());
+				} else {
+					underAttack(enemy);
+				}
 			}
 			if(enemy.dronesActive()) {
 				System.out.println("\nDRONES");
@@ -419,7 +463,7 @@ public class EternalConflict {
 			System.out.println("  to move into position to retaliate.");
 			Prompt.getString("\n  Press ENTER to continue");
 		} while(player.getHull() > 0 && enemy.getHull() > 0);
-		printEnding(suicide);
+		printEnding(suicide, overheatFailure);
 	}
 	
 	public void loadWeapons() {
@@ -479,10 +523,15 @@ public class EternalConflict {
 		return null;
 	}
 	
-	public void repairSubsystems(Ship ship) {
+	public void startOfTurn(Ship ship) {
+		ship.revertEvasion();
+		ship.regenShield();
+		ship.coolShip();
 		ship.repairPD();
 		ship.repairEngines();
 		ship.repairShields();
+		printPlayerInfo();
+		printEnemyInfo();
 	}
 	
 	public void printPlayerInfo() {
@@ -499,6 +548,7 @@ public class EternalConflict {
 		System.out.printf("    Shield  -   %6.2f\n", ship.getShield());
 		System.out.printf("    Armor   -   %6.2f\n", ship.getArmor());
 		System.out.printf("    Hull    -   %6.2f\n", ship.getHull());
+		System.out.printf("    Heat    -   %6.2f / %6.2f\n", ship.getHeat(), ship.getHeatCapacity());
 		if(ship.getEngineState()) {
 			System.out.printf("    Evasion -   %6.2f", 100 * ship.getEvasion());	System.out.println("%");
 		} else {
@@ -526,6 +576,18 @@ public class EternalConflict {
 		}
 	}
 	
+	public boolean overheatDecision() {
+		System.out.println("\nOVERHEATING");
+		System.out.println("  You look down at your ship's temperature readings, and realize that your");
+		System.out.println("  frigate has overheated. Your ship will automatically go into shutdown for");
+		System.out.println("  safety reasons, though you understand that this will cost you your window");
+		System.out.println("  of opportunity. You contemplate the option to override the automatic");
+		System.out.println("  shutdown, acknowledging the risk of catastrophic failure.");
+		System.out.println("    1 - Override Shutdown");
+		System.out.println("    2 - Do Nothing\n");
+		return Prompt.getInt("  -> ", 1, 2) == 1;
+	}
+	
 	public int makeDecision() {
 		boolean noRepairsNecessary = player.getArmor() == player.getMaxHealth(1) && player.getPDState() && player.getEngineState() && player.getShieldState();
 		System.out.println("\n  As you get another window of opportunity, you find yourself making a");
@@ -541,10 +603,11 @@ public class EternalConflict {
 			System.out.print(" (Engines Damaged)");
 		}
 		System.out.println();
-		System.out.println("    4 - Self-Destruct\n");
+		System.out.println("    4 - Shut Down Systems");
+		System.out.println("    5 - Self-Destruct\n");
 		int choice = 0;
 		do {
-			choice = Prompt.getInt("  -> ", 1, 4);
+			choice = Prompt.getInt("  -> ", 1, 5);
 		} while(choice == 2 && noRepairsNecessary || choice == 3 && !player.getEngineState());
 		return choice;
 	}
@@ -601,6 +664,8 @@ public class EternalConflict {
 			System.out.println("  an electrical crackle. You can only briefly see the projectile as it");
 			System.out.println("  streaks towards your target.");
 			damageShip(target, 0, 12, standardCrit, false);
+			System.out.println("    Your Ship    -   8 Heat");
+			player.addHeat(8);
 			break;
 		case "PL":
 			System.out.println("\nPLASMA CANNON");
@@ -608,6 +673,8 @@ public class EternalConflict {
 			System.out.println("  discharges its payload, the bright blue cloud very visible on its path");
 			System.out.println("  towards the enemy ship.");
 			damageShip(target, 2, 12, standardCrit, false);
+			System.out.println("    Your Ship    -  12 Heat");
+			player.addHeat(12);
 			break;
 		case "RC":
 			System.out.println("\nROTARY CANNON");
@@ -617,6 +684,8 @@ public class EternalConflict {
 			for(int i = 0; i < 10; i++) {
 				damageShip(target, 0, 1, 2 * standardCrit, false);
 			}
+			System.out.println("    Your Ship    -   6 Heat");
+			player.addHeat(6);
 			break;
 		case "LZ":
 			System.out.println("\nBEAM LASER");
@@ -626,6 +695,10 @@ public class EternalConflict {
 			System.out.println("  damage to the target, not to mention you've only got enough coolant for");
 			System.out.println("  a few seconds of fire at a time.");
 			damageShip(target, 1, 12, standardCrit, false);
+			System.out.println("    Your Ship    -  15 Heat");
+			System.out.println("    Enemy Ship   -   6 Heat");
+			player.addHeat(15);
+			enemy.addHeat(6);
 			break;
 		case "ML":
 			System.out.println("\nMISSILE LAUNCHER");
@@ -646,6 +719,10 @@ public class EternalConflict {
 			} else {
 				System.out.println("    Miss         -  Enemy PD Destroyed Missile");
 			}
+			System.out.println("    Your Ship    -  10 Heat");
+			System.out.println("    Enemy Ship   -   3 Heat");
+			player.addHeat(10);
+			enemy.addHeat(3);
 			break;
 		case "DN":
 			System.out.println("\nDRONE SWARM");
@@ -694,6 +771,10 @@ public class EternalConflict {
 				} else {
 					System.out.println("    Miss         -  Your PD Destroyed Missile");
 				}
+				System.out.println("    Enemy Ship   -  10 Heat");
+				System.out.println("    Your Ship    -   3 Heat");
+				enemy.addHeat(10);
+				player.addHeat(3);
 			} else if(attacker.hasWeapon("RC")) {
 				System.out.println("\nROTARY CANNON");
 				System.out.println("  You see a muzzle flash coming from the enemy ship, but unlike that of a");
@@ -702,6 +783,8 @@ public class EternalConflict {
 				for(int i = 0; i < 10; i++) {
 					damageShip(player, 0, 1, 2 * standardCrit, false);
 				}
+				System.out.println("    Enemy Ship   -   6 Heat");
+				enemy.addHeat(6);
 			} else {
 					System.out.println("\nNO WEAPON");
 					System.out.println("  The enemy ship attempts to fire a weapon, but they soon realize that they");
@@ -714,11 +797,15 @@ public class EternalConflict {
 			System.out.println("  you see when you fire your plasma cannon. This time, however, you weren't");
 			System.out.println("  the one who pulled the trigger.");
 			damageShip(player, 2, 12, standardCrit, false);
+			System.out.println("    Enemy Ship   -  12 Heat");
+			enemy.addHeat(12);
 		} else if (attacker.hasWeapon("RG")) {
 			System.out.println("\nRAILGUN");
 			System.out.println("  A muzzle flash emanates from your opponent's railgun. You barely have");
 			System.out.println("  time to blink before the projectile reaches the vicinity of your ship.");
 			damageShip(player, 0, 12, standardCrit, false);
+			System.out.println("    Enemy Ship   -   8 Heat");
+			enemy.addHeat(8);
 		} else {
 			System.out.println("\nNO WEAPON");
 			System.out.println("  The enemy ship attempts to fire a weapon, but they soon realize that they");
@@ -916,8 +1003,8 @@ public class EternalConflict {
 		return Integer.parseInt(Prompt.getChar("  -> ", damagedSubsystems) + "");
 	}
 	
-	public void printEnding(boolean suicide) {
-		if(!suicide) {
+	public void printEnding(boolean suicide, boolean overheatFailure) {
+		if(!suicide && !overheatFailure) {
 			Prompt.getString("\n  Press ENTER to continue");
 		}
 		if(suicide) {
@@ -925,6 +1012,13 @@ public class EternalConflict {
 			System.out.println("  Deciding that it is better to die than to be killed, you overload your");
 			System.out.println("  ship's reactor, barely giving you time for your final thoughts as your");
 			System.out.println("  frigate is quickly and suddenly disintegrated.");
+		} else if(overheatFailure) {
+			System.out.println("\nCATASTROPHIC FAILURE");
+			System.out.println("  Unfortunately, your decision to override your ship's automatic shutdown");
+			System.out.println("  and push your frigate beyond its acceptable heat threshold had its");
+			System.out.println("  consequences. The ensuing heat buildup causes your reactor's containment");
+			System.out.println("  to fail, with devastating results as your frigate is quickly and suddenly");
+			System.out.println("  disintegrated.");
 		} else if(player.getHull() <= 0 && enemy.getHull() <= 0) {
 			System.out.println("\nMUTUAL KILL");
 			System.out.println("  As your ship's internal structures sustain critical damage, you look out");
