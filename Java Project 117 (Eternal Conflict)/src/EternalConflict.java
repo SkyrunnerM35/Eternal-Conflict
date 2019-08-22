@@ -664,8 +664,8 @@ public class EternalConflict {
 			System.out.println("  an electrical crackle. You can only briefly see the projectile as it");
 			System.out.println("  streaks towards your target.");
 			damageShip(target, 0, 12, standardCrit, false);
-			System.out.println("    Your Ship    -   8 Heat");
-			player.addHeat(8);
+			System.out.println("    Your Ship    -   12 Heat");
+			player.addHeat(12);
 			break;
 		case "PL":
 			System.out.println("\nPLASMA CANNON");
@@ -673,8 +673,8 @@ public class EternalConflict {
 			System.out.println("  discharges its payload, the bright blue cloud very visible on its path");
 			System.out.println("  towards the enemy ship.");
 			damageShip(target, 2, 12, standardCrit, false);
-			System.out.println("    Your Ship    -  12 Heat");
-			player.addHeat(12);
+			System.out.println("    Your Ship    -  18 Heat");
+			player.addHeat(18);
 			break;
 		case "RC":
 			System.out.println("\nROTARY CANNON");
@@ -684,8 +684,8 @@ public class EternalConflict {
 			for(int i = 0; i < 10; i++) {
 				damageShip(target, 0, 1, 2 * standardCrit, false);
 			}
-			System.out.println("    Your Ship    -   6 Heat");
-			player.addHeat(6);
+			System.out.println("    Your Ship    -   8 Heat");
+			player.addHeat(8);
 			break;
 		case "LZ":
 			System.out.println("\nBEAM LASER");
@@ -695,10 +695,10 @@ public class EternalConflict {
 			System.out.println("  damage to the target, not to mention you've only got enough coolant for");
 			System.out.println("  a few seconds of fire at a time.");
 			damageShip(target, 1, 12, standardCrit, false);
-			System.out.println("    Your Ship    -  15 Heat");
-			System.out.println("    Enemy Ship   -   6 Heat");
-			player.addHeat(15);
-			enemy.addHeat(6);
+			System.out.println("    Your Ship    -  20 Heat");
+			System.out.println("    Enemy Ship   -   8 Heat");
+			player.addHeat(20);
+			enemy.addHeat(8);
 			break;
 		case "ML":
 			System.out.println("\nMISSILE LAUNCHER");
@@ -719,10 +719,10 @@ public class EternalConflict {
 			} else {
 				System.out.println("    Miss         -  Enemy PD Destroyed Missile");
 			}
-			System.out.println("    Your Ship    -  10 Heat");
-			System.out.println("    Enemy Ship   -   3 Heat");
-			player.addHeat(10);
-			enemy.addHeat(3);
+			System.out.println("    Your Ship    -  15 Heat");
+			System.out.println("    Enemy Ship   -   6 Heat");
+			player.addHeat(15);
+			enemy.addHeat(6);
 			break;
 		case "DN":
 			System.out.println("\nDRONE SWARM");
@@ -771,10 +771,10 @@ public class EternalConflict {
 				} else {
 					System.out.println("    Miss         -  Your PD Destroyed Missile");
 				}
-				System.out.println("    Enemy Ship   -  10 Heat");
-				System.out.println("    Your Ship    -   3 Heat");
-				enemy.addHeat(10);
-				player.addHeat(3);
+				System.out.println("    Enemy Ship   -  15 Heat");
+				System.out.println("    Your Ship    -   6 Heat");
+				enemy.addHeat(15);
+				player.addHeat(6);
 			} else if(attacker.hasWeapon("RC")) {
 				System.out.println("\nROTARY CANNON");
 				System.out.println("  You see a muzzle flash coming from the enemy ship, but unlike that of a");
@@ -783,8 +783,8 @@ public class EternalConflict {
 				for(int i = 0; i < 10; i++) {
 					damageShip(player, 0, 1, 2 * standardCrit, false);
 				}
-				System.out.println("    Enemy Ship   -   6 Heat");
-				enemy.addHeat(6);
+				System.out.println("    Enemy Ship   -   8 Heat");
+				enemy.addHeat(8);
 			} else {
 					System.out.println("\nNO WEAPON");
 					System.out.println("  The enemy ship attempts to fire a weapon, but they soon realize that they");
@@ -797,15 +797,15 @@ public class EternalConflict {
 			System.out.println("  you see when you fire your plasma cannon. This time, however, you weren't");
 			System.out.println("  the one who pulled the trigger.");
 			damageShip(player, 2, 12, standardCrit, false);
-			System.out.println("    Enemy Ship   -  12 Heat");
-			enemy.addHeat(12);
+			System.out.println("    Enemy Ship   -  18 Heat");
+			enemy.addHeat(18);
 		} else if (attacker.hasWeapon("RG")) {
 			System.out.println("\nRAILGUN");
 			System.out.println("  A muzzle flash emanates from your opponent's railgun. You barely have");
 			System.out.println("  time to blink before the projectile reaches the vicinity of your ship.");
 			damageShip(player, 0, 12, standardCrit, false);
-			System.out.println("    Enemy Ship   -   8 Heat");
-			enemy.addHeat(8);
+			System.out.println("    Enemy Ship   -   12 Heat");
+			enemy.addHeat(12);
 		} else {
 			System.out.println("\nNO WEAPON");
 			System.out.println("  The enemy ship attempts to fire a weapon, but they soon realize that they");
