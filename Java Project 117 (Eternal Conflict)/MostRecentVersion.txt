@@ -1,21 +1,24 @@
 /**
  * A turn-based space combat game.
  * 
- * 0.3.1 alpha 8/02/2019
- * Finished implementing lore, both a full and abridged version.
- * Added ability to view changelog in-game.
+ * 0.4.0 alpha 8/21/2019
+ * Added engines and shields as subsystems (alongside PD), which can be damaged via enemy fire.
+ * Repairing your ship now gives you the option to repair a single damaged subsystem, or your armor.
+ * Critical hits now double the chance of damaging a subsystem.
+ * Subsystem damage rate reduced to 10%, from 20%.
  * 
  * @author Michael Yang
- * @version 0.3.1 alpha
+ * @version 0.4.0 alpha
  * @since   7/28/2019
- * @updated 8/02/2019
+ * @updated 8/21/2019
  */
 
 import java.util.Scanner;
+import java.util.ArrayList;
 
 public class EternalConflict {
 	
-	public static final String VERSION = "0.3.1 alpha";
+	public static final String VERSION = "0.4.0 alpha";
 	
 	/*
 	 * Damage types:
@@ -37,18 +40,27 @@ public class EternalConflict {
 	 */
 	
 	/*
-	 * Munition types:
+	 * Munitions:
 	 * 0 Missiles
+	 */
+	
+	/*
+	 * Subsystems:
+	 * PDF Point-Defenses (PD)
+	 * ENG Engines
+	 * SHL Shields
 	 */
 	
 	private Ship player;
 	private Ship enemy;
 	private double standardEvasion;
 	private double standardCrit;
+	private double standardSubDamage;
 	
 	public EternalConflict() {
 		standardEvasion = .15;
 		standardCrit = .05;
+		standardSubDamage = .1;
 		player = new Ship(20, 100, 40, 2, new double[] {0, .25, .5, 0}, new double[] {.5, .25, 0, 0}, standardEvasion, new int[1], null);
 		enemy = new Ship(20, 100, 40, 2, new double[] {0, .25, .5, 0}, new double[] {.5, .25, 0, 0}, standardEvasion, new int[1], new String[] {"RG", "PL", "RC", "DN", "ML"});
 		enemy.setMunitions(0, 10);
@@ -217,9 +229,9 @@ public class EternalConflict {
 		boolean suicide = false;
 		loadWeapons();
 		do {
-			player.setEvasion(standardEvasion);
+			player.revertEvasion();
 			player.regenShield();
-			player.repairPD();
+			repairSubsystems(player);
 			printPlayerInfo();
 			printEnemyInfo();
 			choice = makeDecision();
@@ -247,14 +259,40 @@ public class EternalConflict {
 				}
 				break;
 			case 2:
-				System.out.println("\nREPAIR SHIP");
-				System.out.println("  You send a team to scour your ship for any damage, making repairs along");
-				System.out.println("  the way. Half the battle is keeping your ship together, after all.");
-				System.out.println("    Your Armor   -  10 Repair");
-				player.healArmor(10);
-				if(!player.getRepairStatus() && !player.getPDState()) {
+				choice = chooseRepairTarget();
+				switch(choice) {
+				case 1:
+					System.out.println("\nREPAIR ARMOR");
+					System.out.println("  You send a team to scour your ship's armor for any damage, making repairs");
+					System.out.println("  along the way. Half the battle is keeping your ship together, after all.");
+					System.out.println("    Your Armor   -  10 Repair");
+					player.healArmor(10);
+					break;
+				case 2:
+					System.out.println("\nREPAIR PD");
+					System.out.println("  You send a team to check on your point-defenses, ordering them to make any");
+					System.out.println("  necessary repairs. Your adversary may be packing drones or missiles, after");
+					System.out.println("  all, and you want to make sure you're protected against them.");
 					System.out.println("    Your Point-Defenses Have Been Repaired (One Turn Needed to Re-Activate)");
-					player.toggleRepair();
+					player.togglePDRepair();
+					break;
+				case 3:
+					System.out.println("\nREPAIR ENGINES");
+					System.out.println("  You order a repair team to get your engines back in working order. You");
+					System.out.println("  seem to be getting sick of giving your enemy easy hits, and want to be");
+					System.out.println("  able to start dodging shots again.");
+					System.out.println("    Your Engines Have Been Repaired (One Turn Needed to Re-Activate)");
+					player.toggleEngineRepair();
+					break;
+				case 4:
+					System.out.println("\nREPAIR SHIELDS");
+					System.out.println("  The shields are the first line of defense on any ship, but unfortunately,");
+					System.out.println("  yours seem to be disabled at this moment. Seeking to rectify this, you");
+					System.out.println("  order a team to check out your shield projector and get it functioning");
+					System.out.println("  again.");
+					System.out.println("    Your Shield Projector Has Been Repaired (One Turn Needed to Re-Activate)");
+					player.toggleShieldRepair();
+					break;
 				}
 				break;
 			case 3:
@@ -262,7 +300,7 @@ public class EternalConflict {
 				System.out.println("  Ordering your crew to hold on tight, you divert additional power to your");
 				System.out.println("  maneuvering thrusters in preparation for incoming fire.");
 				System.out.println("    Your Evasion Rate is Doubled for One Turn");
-				player.setEvasion(2 * standardEvasion);
+				player.setEvasion(2 * player.getEvasion());
 				break;
 			case 4:
 				player.setHull(0);
@@ -295,33 +333,57 @@ public class EternalConflict {
 				break;
 			}
 			Prompt.getString("\n  Press ENTER to continue");
-			enemy.repairPD();
+			repairSubsystems(enemy);
 			printPlayerInfo();
 			printEnemyInfo();
-			enemy.setEvasion(standardEvasion);
+			enemy.revertEvasion();
 			enemy.regenShield();
 			System.out.println("\n  Opportunities come and go quickly in the heat of battle; the moment you");
 			System.out.println("  took advantage of the last chance, the situation changed and now the enemy");
 			System.out.println("  ship is in position to act.");
 			Prompt.getString("\n  Press ENTER to continue");
-			if(enemy.getArmor() <= 25 && Math.random() < .25) {
-				System.out.println("\nREPAIR SHIP");
-				System.out.println("  The enemy ship doesn't seem to be doing much; suspicious, you observe");
-				System.out.println("  your opponent more closely. You notice the sparks of welding torches and");
-				System.out.println("  the movement of nanites on their frigate; they seem to be concerned about");
-				System.out.println("  their survival.");
-				System.out.println("    Enemy Armor  -  10 Repair");
-				enemy.healArmor(10);
-				if(!enemy.getRepairStatus() && !enemy.getPDState()) {
+			if(Math.random() < .35 && (enemy.getArmor() <= 25 || !enemy.getPDState() || !enemy.getEngineState() || !enemy.getShieldState())) {
+				if(enemy.getArmor() <= 25) {
+					System.out.println("\nREPAIR ARMOR");
+					System.out.println("  The enemy ship doesn't seem to be doing much; suspicious, you observe");
+					System.out.println("  your opponent more closely. You notice the sparks of welding torches and");
+					System.out.println("  the movement of nanites on their frigate; they seem to be concerned about");
+					System.out.println("  their survival.");
+					System.out.println("    Enemy Armor  -  10 Repair");
+					enemy.healArmor(10);
+				} else if(!enemy.getShieldRepairStatus() && !enemy.getShieldState()) {
+					System.out.println("\nREPAIR SHIELDS");
+					System.out.println("  The enemy ship doesn't seem to be doing much; suspicious, you observe");
+					System.out.println("  your opponent more closely. You notice the sparks of welding torches and");
+					System.out.println("  the movement of nanites on their frigate; they seem to be concerned about");
+					System.out.println("  their survival.");
+					System.out.println("    Enemy Shield Projector Has Been Repaired (One Turn Needed to Re-Activate)");
+					enemy.toggleShieldRepair();
+				} else if(!enemy.getPDRepairStatus() && !enemy.getPDState()) {
+					System.out.println("\nREPAIR PD");
+					System.out.println("  The enemy ship doesn't seem to be doing much; suspicious, you observe");
+					System.out.println("  your opponent more closely. You notice the sparks of welding torches and");
+					System.out.println("  the movement of nanites on their frigate; they seem to be concerned about");
+					System.out.println("  their survival.");
 					System.out.println("    Enemy Point-Defenses Have Been Repaired (One Turn Needed to Re-Activate)");
-					enemy.toggleRepair();
+					enemy.togglePDRepair();
+				} else if(!enemy.getEngineRepairStatus() && !enemy.getEngineState()) {
+					System.out.println("\nREPAIR ENGINES");
+					System.out.println("  The enemy ship doesn't seem to be doing much; suspicious, you observe");
+					System.out.println("  your opponent more closely. You notice the sparks of welding torches and");
+					System.out.println("  the movement of nanites on their frigate; they seem to be concerned about");
+					System.out.println("  their survival.");
+					System.out.println("    Enemy Engines Have Been Repaired (One Turn Needed to Re-Activate)");
+					enemy.toggleEngineRepair();
+				} else {
+					System.out.println("    THIS MESSAGE SHOULD NEVER APPEAR");
 				}
-			} else if(enemy.getShield() <= 15 && Math.random() < .20) {
+			} else if(Math.random() < .20 && enemy.getEngineState() && enemy.getShield() <= 15) {
 				System.out.println("\nEVASIVE MANEUVERS");
 				System.out.println("  You notice your adversary maneuver his ship in a much more erratic manner.");
 				System.out.println("  Landing your next shot will be tricky.");
 				System.out.println("    Enemy Evasion Rate is Doubled for One Turn");
-				enemy.setEvasion(2 * standardEvasion);
+				enemy.setEvasion(2 * enemy.getEvasion());
 			} else {
 				underAttack(enemy);
 			}
@@ -388,7 +450,7 @@ public class EternalConflict {
 			return false;
 		}
 		for(int i = 0; i < option.length(); i++) {
-			if("012345".indexOf(option.charAt(i) + "") == -1 && taken[Integer.parseInt(option.charAt(i) + "")]) {
+			if("012345".indexOf(option.charAt(i) + "") == -1 || taken[Integer.parseInt(option.charAt(i) + "")]) {
 				return false;
 			} else {
 				taken[Integer.parseInt(option.charAt(i) + "")] = true;
@@ -411,18 +473,22 @@ public class EternalConflict {
 			player.setDrones(5);
 			return "DN";
 		case 5:
-			player.setMunitions(0, 10);
+			player.setMunitions(0, player.getMunitions(0) + 10);
 			return "ML";
 		}
 		return null;
 	}
 	
+	public void repairSubsystems(Ship ship) {
+		ship.repairPD();
+		ship.repairEngines();
+		ship.repairShields();
+	}
 	
 	public void printPlayerInfo() {
 		System.out.println("\n  Your Ship");
 		printShipInfo(player);
 	}
-	
 	
 	public void printEnemyInfo() {
 		System.out.println("\n  Enemy Ship");
@@ -430,35 +496,57 @@ public class EternalConflict {
 	}
 	
 	public void printShipInfo(Ship ship) {
-		System.out.printf("    Shield  - %6.2f\n", ship.getShield());
-		System.out.printf("    Armor   - %6.2f\n", ship.getArmor());
-		System.out.printf("    Hull    - %6.2f\n", ship.getHull());
-		System.out.printf("    Evasion - %6.2f", 100 * ship.getEvasion());	System.out.println("%");
+		System.out.printf("    Shield  -   %6.2f\n", ship.getShield());
+		System.out.printf("    Armor   -   %6.2f\n", ship.getArmor());
+		System.out.printf("    Hull    -   %6.2f\n", ship.getHull());
+		if(ship.getEngineState()) {
+			System.out.printf("    Evasion -   %6.2f", 100 * ship.getEvasion());	System.out.println("%");
+		} else {
+			System.out.println("    Evasion -     0.00% (Engines Damaged)");
+		}
 		if(ship.getPDState()) {
 			System.out.println("    PD      -   Active");
 		} else {
 			System.out.println("    PD      - Disabled");
 		}
+		if(ship.getShieldState()) {
+			System.out.println("    Shields -   Active");
+		} else {
+			System.out.println("    Shields - Disabled");
+		}
 		if(ship.hasWeapon("ML")) {
-			System.out.printf("    Missile - %6d\n", ship.getMunitions(0));
+			System.out.printf("    Missile -   %6d\n", ship.getMunitions(0));
 		}
 		if(ship.hasWeapon("DN")) {
 			if(ship.dronesActive()) {
 				System.out.println("    Drones  - " + ship.getDroneString());
 			} else {
-				System.out.println("    Drones  - None Active");
+				System.out.println("    Drones  - Inactive");
 			}
 		}
 	}
 	
 	public int makeDecision() {
+		boolean noRepairsNecessary = player.getArmor() == player.getMaxHealth(1) && player.getPDState() && player.getEngineState() && player.getShieldState();
 		System.out.println("\n  As you get another window of opportunity, you find yourself making a");
 		System.out.println("  decision. You need to act quickly lest you lose your chance.");
 		System.out.println("    1 - Attack Enemy");
-		System.out.println("    2 - Repair Ship"); 
-		System.out.println("    3 - Evasive Maneuvers");
+		System.out.print("    2 - Repair Ship");
+		if(noRepairsNecessary) {
+			System.out.print(" (No Repairs Necessary)");
+		}
+		System.out.println();
+		System.out.print("    3 - Evasive Maneuvers");
+		if(!player.getEngineState()) {
+			System.out.print(" (Engines Damaged)");
+		}
+		System.out.println();
 		System.out.println("    4 - Self-Destruct\n");
-		return Prompt.getInt("  -> ", 1, 4);
+		int choice = 0;
+		do {
+			choice = Prompt.getInt("  -> ", 1, 4);
+		} while(choice == 2 && noRepairsNecessary || choice == 3 && !player.getEngineState());
+		return choice;
 	}
 	
 	public int chooseTarget() {
@@ -579,7 +667,7 @@ public class EternalConflict {
 			System.out.println("\nDRONE LASER");
 			System.out.println("  Somehow you managed to mount a drone laser on your ship, thus wasting a");
 			System.out.println("  perfectly good hardpoint that could've been used to mount better weapons.");
-			damageShip(target, 1, 1.5, standardCrit, false);
+			damageShip(enemy, 1, 2, standardCrit, false);
 			break;
 		}
 		return true;
@@ -659,7 +747,7 @@ public class EternalConflict {
 			type = "Omni";
 			break;
 		}
-		if(alwaysAccurate || Math.random() > target.getEvasion()) {
+		if(alwaysAccurate || !target.getEngineState() || Math.random() > target.getEvasion()) {
 			if(target.getShield() <= 0) {
 				
 			} else if(target.getShield() < (1 - target.getShieldResist(damageType)) * damage) {
@@ -715,7 +803,11 @@ public class EternalConflict {
 				}
 				System.out.println();
 				if(target instanceof Ship) {
-					rollPDDamage((Ship)target);
+					if(crit) {
+						rollSubsystemDamage((Ship)target, 2 * standardSubDamage);
+					} else {
+						rollSubsystemDamage((Ship)target, standardSubDamage);
+					}
 				}
 				return;
 			}
@@ -730,24 +822,99 @@ public class EternalConflict {
 			}
 			System.out.println();
 			if(target instanceof Ship) {
-				rollPDDamage((Ship)target);
+				if(crit) {
+					rollSubsystemDamage((Ship)target, 2 * standardSubDamage);
+				} else {
+					rollSubsystemDamage((Ship)target, standardSubDamage);
+				}
 			}
 		} else {
 				System.out.println("    Miss");
 		}
 	}
 	
-	public void rollPDDamage(Ship target) {
-		if(target.getPDState() && Math.random() < .2) {
-			target.togglePD();
-			if(target == player) {
-				System.out.println("    Your Point-Defenses Have Been Damaged");
-			} else {
-				System.out.println("    Enemy Point-Defenses Have Been Damaged");
+	public void rollSubsystemDamage(Ship target, double chance) {
+		if(Math.random() < chance) {
+			ArrayList<String> activeSubsystems = new ArrayList<String>();
+			if(target.getPDState()) {
+				activeSubsystems.add("PDF");
 			}
-		}
+			if(target.getEngineState()) {
+				activeSubsystems.add("ENG");
+			}
+			if(target.getShieldState()) {
+				activeSubsystems.add("SHL");
+			}
+			if(activeSubsystems.isEmpty()) {
+				return;
+			}
+			String targetSystem = activeSubsystems.get((int)(Math.random() * activeSubsystems.size()));
+			switch(targetSystem) {
+			case "PDF":
+				target.togglePD();
+				if(target == player) {
+					System.out.println("    Your Point-Defenses Have Been Damaged");
+				} else {
+					System.out.println("    Enemy Point-Defenses Have Been Damaged");
+				}
+				break;
+			case "ENG":
+				target.toggleEngines();
+				if(target == player) {
+					System.out.println("    Your Engines Have Been Damaged");
+				} else {
+					System.out.println("    Enemy Engines Have Been Damaged");
+				}
+				break;
+			case "SHL":
+				target.toggleShields();
+				if(target == player) {
+					System.out.println("    Your Shield Projector Has Been Damaged");
+				} else {
+					System.out.println("    Enemy Shield Projector Has Been Damaged");
+				}
+				break;
+			}
+ 		}
 	}
 	
+	public int chooseRepairTarget() {
+		String damagedSubsystems = "";
+		System.out.println("\nREPAIR SHIP");
+		System.out.println("  Instead of focusing on the enemy, you choose to focus on your own ship; some");
+		System.out.println("  of your onboard systems have been damaged, and you feel that it is important");
+		System.out.println("  to make some repairs. Unfortunately, you only have time to repair one part of");
+		System.out.println("  your ship, leaving you with a decision to make.");
+		System.out.print("    1 - Armor");
+		if(player.getArmor() == player.getMaxHealth(1)) {
+			System.out.print(" (Full)");
+		} else {
+			damagedSubsystems += "1";
+		}
+		System.out.println();
+		System.out.print("    2 - Point-Defenses");
+		if(player.getPDState()) {
+			System.out.print(" (No Repairs Needed)");
+		}  else {
+			damagedSubsystems += "2";
+		}
+		System.out.println();
+		System.out.print("    3 - Engines");
+		if(player.getEngineState()) {
+			System.out.print(" (No Repairs Needed)");
+		}  else {
+			damagedSubsystems += "3";
+		}
+		System.out.println();
+		System.out.print("    4 - Shield Projector");
+		if(player.getShieldState()) {
+			System.out.print(" (No Repairs Needed)");
+		}  else {
+			damagedSubsystems += "4";
+		}
+		System.out.println("\n");
+		return Integer.parseInt(Prompt.getChar("  -> ", damagedSubsystems) + "");
+	}
 	
 	public void printEnding(boolean suicide) {
 		if(!suicide) {
