@@ -1,19 +1,30 @@
+/**
+ * @author Michael Yang
+ * @since   7/28/2019
+ */
+
 import java.util.ArrayList;
 
 public class Ship extends Craft {
 
 	private boolean isDodging;
 	private boolean pdActive;
+	private double heat;
+	private double heatCapacity;
+	private double coolingAmount;
 	private int[] munitions;
 	private String[] weapons;
 	private ArrayList<Drone> drones;
 	private boolean dronesLaunched;
 	private boolean pdJustRepaired;
 	
-	public Ship(double hullI, double armorI, double shieldI, double shieldRegenI, double[] armorResistI, double[] shieldResistI, double evasionI, int[] munitionsI, String[] weaponsI) {
+	public Ship(double hullI, double armorI, double shieldI, double shieldRegenI, double[] armorResistI, double[] shieldResistI, double evasionI, double heatCapacityI, double coolingAmountI, int[] munitionsI, String[] weaponsI) {
 		super(hullI, armorI, shieldI, shieldRegenI, armorResistI, shieldResistI, evasionI);
 		isDodging = false;
 		pdActive = true;
+		heat = 0;
+		heatCapacity = heatCapacityI;
+		coolingAmount = coolingAmountI;
 		munitions = munitionsI;
 		weapons = weaponsI;
 		drones = new ArrayList<Drone>();
@@ -32,6 +43,34 @@ public class Ship extends Craft {
 	
 	public void togglePD() {
 		pdActive = !pdActive;
+	}
+	
+	public double getHeat() {
+		return heat;
+	}
+	
+	public void setHeat(double newHeat) {
+		heat = newHeat;
+	}
+	
+	public void addHeat(double heatAmount) {
+		heat += heatAmount;
+	}
+	
+	public void removeHeat(double heatAmount) {
+		if(getHeat() - heatAmount <= 0) {
+			heat = 0;
+			return;
+		}
+		heat -= heatAmount;
+	}
+	
+	public void coolShip() {
+		removeHeat(coolingAmount);
+	}
+	
+	public double getHeatCapacity() {
+		return heatCapacity;
 	}
 	
 	public int getMunitions(int i) {

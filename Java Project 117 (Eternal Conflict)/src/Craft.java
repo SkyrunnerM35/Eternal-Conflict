@@ -1,3 +1,7 @@
+/**
+ * @author Michael Yang
+ * @since   7/28/2019
+ */
 
 public abstract class Craft {
 	
