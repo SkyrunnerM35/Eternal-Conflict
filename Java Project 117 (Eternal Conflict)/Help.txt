@@ -13,24 +13,27 @@ RESISTANCES AND REGENERATION
   Shields resist 50% of kinetic damage, 25% of thermal, and 0% of EM, while
   armor resists 0% kinetic, 25% thermal, and 50% EM.
 
-  Shields automatically regenerate 2 points at the start of every turn, 
-  while armor must be manually repaired, using up your turn in the process.
-  Hulls cannot be repaired, so keep your shields and armor up.
+  Shields automatically regenerate 2 points at the start of every turn (if
+  long as your shield projector is undamaged), while armor must be
+  manually repaired, using up your turn in the process. Hulls cannot be
+  repaired, so keep your shields and armor up.
 
 TURNS
   Each turn is summarized as follows:
     Shield Regen
+    Subsystem Re-Activation
     Decision
     Drones
     Point-Defense
 
 **BREAK**
 
-SHIELD REGEN AND DECISION
+SHIELD REGEN, SUBSYSTEM ACTIVATION, AND DECISION
   At the start of each turn, your shields will regenerate 2 points if they
-  are damaged, as mentioned above. During each turn, you can do one of four
-  actions; fire weapons, repair your ship, attempt to dodge enemy fire, or
-  self-destruct.
+  are damaged, as mentioned above. Moreover, if any subsystems were
+  repaired in the previous turn, they will re-activate in this turn. During
+  each turn, you can do one of four actions; fire weapons, repair your ship,
+  attempt to dodge enemy fire, or self-destruct.
 
 FIRE WEAPONS
   Choosing to attack the enemy ship will then prompt you to use one of the
@@ -39,9 +42,9 @@ FIRE WEAPONS
   ship or a random drone in their swarm, but not both.
 
 RAILGUN
-  The railgun is a kinetic weapon that fires a single 250mm osmium slug.
-  It does 12 damage per hit before resistances, and as a kinetic weapon, 
-  it is strong against armor but weak against shields.
+  The railgun is a kinetic weapon that fires a single 250mm osmium slug. It
+  does 12 damage per hit before resistances, and as a kinetic weapon, it is
+  strong against armor but weak against shields.
 
 BEAM LASER
   The beam laser is a thermal weapon that fires a sustained beam to burn
@@ -51,20 +54,20 @@ BEAM LASER
 
 PLASMA CANNON
   The plasma cannon generates a cloud of superheated plasma contained in a
-  magnetic field that is fired towards the target. It does 12 EM damage
-  per hit and is thus strong against shields but weak against armor.
+  magnetic field that is fired towards the target. It does 12 EM damage per
+  hit and is thus strong against shields but weak against armor.
 
 **BREAK**
 
 ROTARY CANNON
-  A six-barreled Gatling weapon, the rotary cannon has a cyclic rate of
-  6000 rounds per minute and fires a burst of ten 20mm shells. Each shell
-  deals 1 kinetic damage (10 damage in total), which makes it slightly
-  weaker than the railgun, but hit chances for each shell are calculated
-  independently, which makes this weapon ideal for attempting to hit
-  targets with high evasion, as well as for disabling subsystems such as PD.
-  The weapon is also unique in that its critical hit chance is 10%, which is
-  twice that of the standard crit rate.
+  A six-barreled Gatling weapon, the rotary cannon has a cyclic rate of 6000
+  rounds per minute and fires a burst of ten 20mm shells. Each shell deals 1
+  kinetic damage (10 damage in total), which makes it slightly weaker than
+  the railgun, but hit chances for each shell are calculated independently, 
+  which makes this weapon ideal for attempting to hit targets with high
+  evasion, as well as for disabling subsystems; it can hit multiple
+  subsystems in one burst. The weapon is also unique in that its critical
+  hit chance is 10%, which is twice that of the standard crit rate.
 
 DRONE SWARM
   They say that unmanned vehicles are the future, and you're certainly
@@ -92,11 +95,19 @@ CRITICAL HITS
 EVASION
   Both your ship and the enemy's have a 15% evasion rate, which means that
   your shot may miss the enemy, and vice versa.
+  
+SUBSYSTEM DAMAGE
+  Any shot that damages your armor or hull will have a 10% chance of
+  damaging a subsystem; only one subsystem may be damaged with each shot. A
+  damaged point-defense system will open you up to certain weapons, a
+  crippled engine will set your evasion to zero and prevent you from
+  performing evasive maneuvers, and a damaged shield projector will disable
+  your shield regeneration.
 
 REPAIR SHIP
-  Choosing to repair your ship will instantly restore 10 armor points and
-  repair your point-defenses if they were damaged. Newly-repaired point-
-  defenses will require another turn to re-activate.
+  Choosing to repair your ship will give you the option to repair either
+  your armor (restoring 10 points), or a damaged subsystem. All subsystems
+  require another turn to re-activate after being repaired.
 
 EVASIVE MANEUVERS
   Choosing to try and dodge enemy fire will double your evasion rate to 30%
@@ -115,9 +126,7 @@ DRONES
 POINT-DEFENSE
   Your point-defense guns, while active, will protect you from enemy
   missiles. Moreover, if your enemy has active drones, they will shoot down
-  a random drone per turn right after your drones attack the enemy. It
-  should be noted that any damage to your armor or hull will have a 20%
-  chance of disabling your PD.
+  a random drone per turn right after your drones attack the enemy.
 
 TURN END
   After your turn ends, the enemy ship will take their turn, after which it

@@ -1,3 +1,9 @@
+0.4.0 alpha 8/21/2019
+ * Added engines and shields as subsystems (alongside PD), which can be damaged via enemy fire.
+ * Repairing your ship now gives you the option to repair a single damaged subsystem, or your armor.
+ * Critical hits now double the chance of damaging a subsystem.
+ * Subsystem damage rate reduced to 10%, from 20%.
+
 0.3.1 alpha 8/02/2019
  * Finished implementing lore, both a full and abridged version.
  * Added ability to view changelog in-game.
