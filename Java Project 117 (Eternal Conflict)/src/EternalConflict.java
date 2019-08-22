@@ -8,7 +8,7 @@
  * Subsystem damage rate reduced to 10%, from 20%.
  * 
  * @author Michael Yang
- * @version 0.3.1 alpha
+ * @version 0.4.0 alpha
  * @since   7/28/2019
  * @updated 8/21/2019
  */
