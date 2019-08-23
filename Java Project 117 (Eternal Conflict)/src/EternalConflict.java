@@ -804,7 +804,7 @@ public class EternalConflict {
 			System.out.println("  A muzzle flash emanates from your opponent's railgun. You barely have");
 			System.out.println("  time to blink before the projectile reaches the vicinity of your ship.");
 			damageShip(player, 0, 12, standardCrit, false);
-			System.out.println("    Enemy Ship   -   12 Heat");
+			System.out.println("    Enemy Ship   -  12 Heat");
 			enemy.addHeat(12);
 		} else {
 			System.out.println("\nNO WEAPON");
