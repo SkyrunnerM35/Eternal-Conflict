@@ -1,23 +1,13 @@
 /**
  * A turn-based space combat game.
  * 
- * 0.4.0 alpha 8/21/2019
- * Added engines and shields as subsystems (alongside PD), which can be damaged via enemy fire.
- * Repairing your ship now gives you the option to repair a single damaged subsystem, or your armor.
- * Repairing armor now restores 15 health, from 10.
- * Critical hits now double the chance of damaging a subsystem.
- * Subsystem damage rate reduced to 10%, from 20%.
- * Added heat as a new mechanic.
- * In general, thermal weapons add the most heat, followed by EM, followed by kinetic. However, thermal
- * weapons also tend to add heat to the target ship.
- * Option to shut down systems and bleed off more heat than usual, but this uses up the turn.
- * An overheating ship must shut down its systems; the player can choose to override this, but at a 20%
- * chance of destroying their ship.
+ * 0.4.1 alpha 8/23/2019
+ * Weapons which add heat to the target ship no longer do so upon a miss.
  * 
  * @author Michael Yang
- * @version 0.4.0 alpha
+ * @version 0.4.1 alpha
  * @since   7/28/2019
- * @updated 8/21/2019
+ * @updated 8/23/2019
  */
 
 import java.util.Scanner;
@@ -25,7 +15,7 @@ import java.util.ArrayList;
 
 public class EternalConflict {
 	
-	public static final String VERSION = "0.4.0 alpha";
+	public static final String VERSION = "0.4.1 alpha";
 	
 	/*
 	 * Damage types:
@@ -694,11 +684,13 @@ public class EternalConflict {
 			System.out.println("  difficult to keep the weapon focused in a single spot long enough to do");
 			System.out.println("  damage to the target, not to mention you've only got enough coolant for");
 			System.out.println("  a few seconds of fire at a time.");
-			damageShip(target, 1, 12, standardCrit, false);
+			boolean hit = damageShip(target, 1, 12, standardCrit, false);
 			System.out.println("    Your Ship    -  20 Heat");
-			System.out.println("    Enemy Ship   -   8 Heat");
 			player.addHeat(20);
-			enemy.addHeat(8);
+			if(hit) {
+				System.out.println("    Enemy Ship   -   8 Heat");
+				enemy.addHeat(8);
+			}
 			break;
 		case "ML":
 			System.out.println("\nMISSILE LAUNCHER");
@@ -716,13 +708,15 @@ public class EternalConflict {
 			player.consumeMunitions(0);
 			if(!(target instanceof Ship) || target instanceof Ship && !((Ship)target).getPDState()) {
 				damageShip(target, 1, 15, standardCrit, true);
+				System.out.println("    Your Ship    -  15 Heat");
+				System.out.println("    Enemy Ship   -   6 Heat");
+				player.addHeat(15);
+				enemy.addHeat(6);
 			} else {
 				System.out.println("    Miss         -  Enemy PD Destroyed Missile");
+				System.out.println("    Your Ship    -  15 Heat");
+				player.addHeat(15);
 			}
-			System.out.println("    Your Ship    -  15 Heat");
-			System.out.println("    Enemy Ship   -   6 Heat");
-			player.addHeat(15);
-			enemy.addHeat(6);
 			break;
 		case "DN":
 			System.out.println("\nDRONE SWARM");
@@ -768,13 +762,15 @@ public class EternalConflict {
 				attacker.consumeMunitions(0);
 				if(!player.getPDState()) {
 					damageShip(player, 1, 15, standardCrit, true);
+					System.out.println("    Enemy Ship   -  15 Heat");
+					System.out.println("    Your Ship    -   6 Heat");
+					enemy.addHeat(15);
+					player.addHeat(6);
 				} else {
 					System.out.println("    Miss         -  Your PD Destroyed Missile");
+					System.out.println("    Enemy Ship   -  15 Heat");
+					enemy.addHeat(15);
 				}
-				System.out.println("    Enemy Ship   -  15 Heat");
-				System.out.println("    Your Ship    -   6 Heat");
-				enemy.addHeat(15);
-				player.addHeat(6);
 			} else if(attacker.hasWeapon("RC")) {
 				System.out.println("\nROTARY CANNON");
 				System.out.println("  You see a muzzle flash coming from the enemy ship, but unlike that of a");
@@ -814,7 +810,7 @@ public class EternalConflict {
 		}
 	}
 	
-	public void damageShip(Craft target, int damageType, double damage, double critRate, boolean alwaysAccurate) {
+	public boolean damageShip(Craft target, int damageType, double damage, double critRate, boolean alwaysAccurate) {
 		String type = "";
 		boolean crit = Math.random() < critRate;
 		if(crit) {
@@ -861,7 +857,7 @@ public class EternalConflict {
 					System.out.print(" (Critical)");
 				}
 				System.out.println();
-				return;
+				return true;
 			}
 			if(target.getArmor() == 0) {
 				
@@ -896,7 +892,7 @@ public class EternalConflict {
 						rollSubsystemDamage((Ship)target, standardSubDamage);
 					}
 				}
-				return;
+				return true;
 			}
 			target.damageHull(damage);
 			if(target == player) {
@@ -915,8 +911,10 @@ public class EternalConflict {
 					rollSubsystemDamage((Ship)target, standardSubDamage);
 				}
 			}
+			return true;
 		} else {
-				System.out.println("    Miss");
+			System.out.println("    Miss");
+			return false;
 		}
 	}
 	
