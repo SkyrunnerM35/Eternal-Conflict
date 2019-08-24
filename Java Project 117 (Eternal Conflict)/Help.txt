@@ -124,7 +124,8 @@ SUBSYSTEM DAMAGE
 REPAIR SHIP
   Choosing to repair your ship will give you the option to repair either
   your armor (restoring 15 points), or a damaged subsystem. All subsystems
-  require another turn to re-activate after being repaired.
+  require another turn to re-activate after being repaired, but cannot be
+  damaged again during this re-activation turn.
 
 EVASIVE MANEUVERS
   Choosing to try and dodge enemy fire will double your evasion rate to 30%
