@@ -13,7 +13,7 @@ RESISTANCES AND REGENERATION
   Shields resist 50% of kinetic damage, 25% of thermal, and 0% of EM, while
   armor resists 0% kinetic, 25% thermal, and 50% EM.
 
-  Shields automatically regenerate 2 points at the start of every turn (if
+  Shields automatically regenerate 2 points at the start of every turn (as
   long as your shield projector is undamaged), while armor must be
   manually repaired, using up your turn in the process. Hulls cannot be
   repaired, so keep your shields and armor up.
