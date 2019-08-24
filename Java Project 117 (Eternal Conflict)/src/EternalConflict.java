@@ -1,13 +1,14 @@
 /**
  * A turn-based space combat game.
  * 
- * 0.4.1 alpha 8/23/2019
+ * 0.4.1 alpha 8/24/2019
  * Weapons which add heat to the target ship no longer do so upon a miss.
+ * Added additional victory messages depending on the state of the player ship's armor.
  * 
  * @author Michael Yang
  * @version 0.4.1 alpha
  * @since   7/28/2019
- * @updated 8/23/2019
+ * @updated 8/24/2019
  */
 
 import java.util.Scanner;
@@ -1041,12 +1042,22 @@ public class EternalConflict {
 			System.out.println("\nVICTORY");
 			System.out.println("  Lining up your crosshairs on the target, you pull the trigger and");
 			System.out.println("  deliver a coup de grace on the disintegrating enemy frigate. Running a");
-			System.out.println("  scan on your ship's systems, you conclude that everything is still");
-			System.out.println("  operational; you were the victor. You quietly celebrate to yourself before");
-			System.out.println("  putting full power into your ship's impulse engines and searching for");
-			System.out.println("  another enemy to engage. It's only the first engagement in the battle, of");
-			System.out.println("  course, and you're confident in your ability to bring down another");
-			System.out.println("  adversary in the name of the Federation.");
+			if(player.getArmor() >= 30) {
+				System.out.println("  scan on your ship's systems, you conclude that everything is still");
+				System.out.println("  operational; you were the victor. You quietly celebrate to yourself before");
+				System.out.println("  putting full power into your ship's impulse engines and searching for");
+				System.out.println("  another enemy to engage. It's only the first engagement in the battle, of");
+				System.out.println("  course, and you're confident in your ability to bring down another");
+				System.out.println("  adversary in the name of the Federation.");
+			} else { //if(player.getArmor() < 30)
+				System.out.println("  scan on your ship's systems, you conclude that although you were the");
+				System.out.println("  victor, the engagement was still a close one. You quietly celebrate to");
+				System.out.println("  yourself before putting full power into your ship's impulse engines and");
+				System.out.println("  setting the course for a nearby Federate repair tender. Although you're");
+				System.out.println("  confident in your ability to pull off similar victories later on in the");
+				System.out.println("  battle, you certainly can't in this state, and it would be prudent to get");
+				System.out.println("  your ship patched up before you jump back into the fray.");
+			}
 		}
 	}
 }
