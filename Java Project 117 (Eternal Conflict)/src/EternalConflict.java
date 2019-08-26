@@ -49,6 +49,15 @@ public class EternalConflict {
 	 * SHL Shields
 	 */
 	
+	/*
+	 * Environments:
+	 * STPX Stellar Proximity
+	 * ASTR Asteroid Field
+	 * PDFA Planetary Defenses (Allied)
+	 * PDFE Planetary Defenses (Enemy)
+	 * FLBT Fleet Battle
+	 */
+	
 	private Ship player;
 	private Ship enemy;
 	private double standardEvasion;
@@ -105,7 +114,7 @@ public class EternalConflict {
 	}
 	
 	public void printIntro() {
-		System.out.println("version " + VERSION + "");
+		System.out.println("version " + VERSION);
 		System.out.println("ETERNAL CONFLICT: A TURN-BASED SPACE COMBAT GAME\n");
 		System.out.println("  Since the year 2572, the Terran Federation and the Free Worlds have been");
 		System.out.println("  at odds over sovereignty of the Antollare system. What should've been a");
@@ -655,8 +664,7 @@ public class EternalConflict {
 			System.out.println("  an electrical crackle. You can only briefly see the projectile as it");
 			System.out.println("  streaks towards your target.");
 			damageShip(target, 0, 12, standardCrit, false);
-			System.out.println("    Your Ship    -   12 Heat");
-			player.addHeat(12);
+			heatTarget(player, 12);
 			break;
 		case "PL":
 			System.out.println("\nPLASMA CANNON");
@@ -664,8 +672,7 @@ public class EternalConflict {
 			System.out.println("  discharges its payload, the bright blue cloud very visible on its path");
 			System.out.println("  towards the enemy ship.");
 			damageShip(target, 2, 12, standardCrit, false);
-			System.out.println("    Your Ship    -  18 Heat");
-			player.addHeat(18);
+			heatTarget(player, 18);
 			break;
 		case "RC":
 			System.out.println("\nROTARY CANNON");
@@ -675,8 +682,7 @@ public class EternalConflict {
 			for(int i = 0; i < 10; i++) {
 				damageShip(target, 0, 1, 2 * standardCrit, false);
 			}
-			System.out.println("    Your Ship    -   8 Heat");
-			player.addHeat(8);
+			heatTarget(player, 8);
 			break;
 		case "LZ":
 			System.out.println("\nBEAM LASER");
@@ -686,11 +692,9 @@ public class EternalConflict {
 			System.out.println("  damage to the target, not to mention you've only got enough coolant for");
 			System.out.println("  a few seconds of fire at a time.");
 			boolean hit = damageShip(target, 1, 12, standardCrit, false);
-			System.out.println("    Your Ship    -  20 Heat");
-			player.addHeat(20);
+			heatTarget(player, 20);
 			if(hit) {
-				System.out.println("    Enemy Ship   -   8 Heat");
-				enemy.addHeat(8);
+				heatTarget(enemy, 8);
 			}
 			break;
 		case "ML":
@@ -709,14 +713,11 @@ public class EternalConflict {
 			player.consumeMunitions(0);
 			if(!(target instanceof Ship) || target instanceof Ship && !((Ship)target).getPDState()) {
 				damageShip(target, 1, 15, standardCrit, true);
-				System.out.println("    Your Ship    -  15 Heat");
-				System.out.println("    Enemy Ship   -   6 Heat");
-				player.addHeat(15);
-				enemy.addHeat(6);
+				heatTarget(player, 15);
+				heatTarget(enemy, 6);
 			} else {
 				System.out.println("    Miss         -  Enemy PD Destroyed Missile");
-				System.out.println("    Your Ship    -  15 Heat");
-				player.addHeat(15);
+				heatTarget(player, 15);
 			}
 			break;
 		case "DN":
@@ -763,14 +764,11 @@ public class EternalConflict {
 				attacker.consumeMunitions(0);
 				if(!player.getPDState()) {
 					damageShip(player, 1, 15, standardCrit, true);
-					System.out.println("    Enemy Ship   -  15 Heat");
-					System.out.println("    Your Ship    -   6 Heat");
-					enemy.addHeat(15);
-					player.addHeat(6);
+					heatTarget(enemy, 15);
+					heatTarget(player, 6);
 				} else {
 					System.out.println("    Miss         -  Your PD Destroyed Missile");
-					System.out.println("    Enemy Ship   -  15 Heat");
-					enemy.addHeat(15);
+					heatTarget(enemy, 15);
 				}
 			} else if(attacker.hasWeapon("RC")) {
 				System.out.println("\nROTARY CANNON");
@@ -780,8 +778,7 @@ public class EternalConflict {
 				for(int i = 0; i < 10; i++) {
 					damageShip(player, 0, 1, 2 * standardCrit, false);
 				}
-				System.out.println("    Enemy Ship   -   8 Heat");
-				enemy.addHeat(8);
+				heatTarget(enemy, 8);
 			} else {
 					System.out.println("\nNO WEAPON");
 					System.out.println("  The enemy ship attempts to fire a weapon, but they soon realize that they");
@@ -794,15 +791,13 @@ public class EternalConflict {
 			System.out.println("  you see when you fire your plasma cannon. This time, however, you weren't");
 			System.out.println("  the one who pulled the trigger.");
 			damageShip(player, 2, 12, standardCrit, false);
-			System.out.println("    Enemy Ship   -  18 Heat");
-			enemy.addHeat(18);
+			heatTarget(enemy, 18);
 		} else if (attacker.hasWeapon("RG")) {
 			System.out.println("\nRAILGUN");
 			System.out.println("  A muzzle flash emanates from your opponent's railgun. You barely have");
 			System.out.println("  time to blink before the projectile reaches the vicinity of your ship.");
 			damageShip(player, 0, 12, standardCrit, false);
-			System.out.println("    Enemy Ship   -  12 Heat");
-			enemy.addHeat(12);
+			heatTarget(enemy, 12);
 		} else {
 			System.out.println("\nNO WEAPON");
 			System.out.println("  The enemy ship attempts to fire a weapon, but they soon realize that they");
@@ -962,6 +957,17 @@ public class EternalConflict {
 				break;
 			}
  		}
+	}
+	
+	public void heatTarget(Ship target, double heatAmount) {
+		if(target == player) {
+			System.out.printf("    Your Ship    -  %2.0f Heat", heatAmount);
+			target.addHeat(heatAmount);
+		} else {
+			System.out.printf("    Enemy Ship   -  %2.0f Heat", heatAmount);
+			target.addHeat(heatAmount);
+		}
+		System.out.println();
 	}
 	
 	public int chooseRepairTarget() {
