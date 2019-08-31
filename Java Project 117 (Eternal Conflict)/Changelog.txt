@@ -3,7 +3,7 @@
  * Added Corrosion Missile, Thermite Bomb, and EMP Cannon, which use the new status effects.
  * Thermite Bomb uses a new ammunition type.
  * Weapon select now begins from 1 instead of 0. Now you don't have to reach all the way across the
- * keyboard to equip a Railgun.
+   keyboard to equip a Railgun.
  * Added tips section to the help menu, as well as information about the new weapons.
 
 0.4.1 alpha 8/24/2019
