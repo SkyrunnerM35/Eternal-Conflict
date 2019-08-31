@@ -45,7 +45,7 @@ SHIELD REGEN, SHIP COOLING, SUBSYSTEM ACTIVATION, AND DECISION
   are damaged, as mentioned above. Meanwhile, your onboard cooling systems
   will remove 5 heat. Moreover, if any subsystems were repaired in the
   previous turn, they will re-activate in this turn. During each turn, you
-  can do one of four actions; fire weapons, repair your ship, attempt to
+  can do one of five actions; fire weapons, repair your ship, attempt to
   dodge enemy fire, shut down your systems, or self-destruct.
 
 FIRE WEAPONS
@@ -57,32 +57,41 @@ FIRE WEAPONS
 **BREAK**
 
 RAILGUN
-  The railgun is a kinetic weapon that fires a single 250mm osmium slug. It
+  The Railgun is a kinetic weapon that fires a single 250mm osmium slug. It
   does 12 damage per hit before resistances, and as a kinetic weapon, it is
   strong against armor but weak against shields.
 
 BEAM LASER
-  The beam laser is a thermal weapon that fires a sustained beam to burn
+  The Beam Laser is a thermal weapon that fires a sustained beam to burn
   through the enemy ship. It does 12 damage per hit before resistances and
-  is equally effective against both shields and armor. However, a railgun is
-  better against armor, while a plasma cannon is better against shields.
+  is equally effective against both shields and armor; moreover, it also
+  adds 8 heat to the target. However, damage-wise, a Railgun is better
+  against armor, while a Plasma Cannon is better against shields.
 
 PLASMA CANNON
-  The plasma cannon generates a cloud of superheated plasma contained in a
+  The Plasma Cannon generates a cloud of superheated plasma contained in a
   magnetic field that is fired towards the target. It does 12 EM damage per
   hit and is thus strong against shields but weak against armor.
 
 **BREAK**
 
 ROTARY CANNON
-  A six-barreled Gatling weapon, the rotary cannon has a cyclic rate of 6000
+  A six-barreled Gatling weapon, the Rotary Cannon has a cyclic rate of 6000
   rounds per minute and fires a burst of ten 20mm shells. Each shell deals 1
   kinetic damage (10 damage in total), which makes it slightly weaker than
-  the railgun, but hit chances for each shell are calculated independently, 
+  the Railgun, but hit chances for each shell are calculated independently, 
   which makes this weapon ideal for attempting to hit targets with high
   evasion, as well as for disabling subsystems; it can hit multiple
   subsystems in one burst. The weapon is also unique in that its critical
   hit chance is 10%, which is twice that of the standard crit rate.
+  
+EMP CANNON
+  A modern warship can do a lot of things; if you prevent the enemy ship
+  from doing some of these things, you will have an advantage. The EMP
+  Cannon discharges a single projectile that emits a strong magnetic field.
+  It deals 4 EM damage, and should the shields be down after this, it will
+  apply the Electromagnetic Pulse status effect for 2 turns;  if the shields
+  are still up after the initial impact, the effect will not be applied.
 
 DRONE SWARM
   They say that unmanned vehicles are the future, and you're certainly
@@ -92,20 +101,46 @@ DRONE SWARM
   and 1 hull, but they also have a 75% evasion rate, making them difficult
   to hit. An active point-defense, however, will shoot down a drone every
   turn with a 100% success rate.
+  
+**BREAK**
 
 MISSILE LAUNCHER
   Putting the brains in the projectile means you can take them out of the
-  gunner. The missile launcher fires a single radar-guided missile that
-  deals 15 thermal damage and hits with 100% accuracy regardless of the
-  enemy's evasion. However, if your enemy has an active PD, they will shoot
-  down every missile you fire at them. The launcher also has limited
-  ammunition; you get ten missiles, so use them wisely.
+  gunner. The Missile Launcher fires a single radar-guided missile that
+  deals 15 thermal damage, adds 6 heat to the target, and hits with 100%
+  accuracy regardless of the enemy's evasion. However, if your enemy has an
+  active PD, they will shoot down every missile you fire at them. The
+  launcher also has limited ammunition; you get ten missiles, so use them
+  wisely.
+
+CORROSION MISSILE
+  Using the same launching system as the standard Missile Launcher, the
+  Corrosion Missile functions similarly; you get finite ammunition and the
+  missile is guaranteed to hit so long as the enemy's PD is down. But
+  instead of a standard warhead, the Corrosion Missile carries a binary
+  compound that, upon mixing, forms a highly adhesive, corrosive gel that
+  quickly coats a solid surface. The missile itself deals 4 kinetic damage
+  on impact (just enough to defeat the 2 shield regenerated per turn), and
+  should the shields be down after the initial impact, it will apply the
+  Corrosion status effect for 3 turns; if the shields are not down after the
+  initial impact, the effect will not be applied. Both the Missile Launcher
+  and Corrosion Missile draw from the same ammunition pool (the desired 
+  warhead is attached to the fuselage just before firing), meaning that if
+  you take both weapons, you will have twenty missiles.
+  
+THERMITE BOMB
+  The Thermite Bomb is an unguided payload, meaning that it is countered by
+  an active PD but can still miss a target normally. It deals no damage on
+  impact, but instead adds 12 heat to the target and inflicts the Afterburn
+  status effect for 3 turns. Similar to missile weapons, your ammunition for
+  this weapon is finite; you get five bombs, use them wisely.
 
 **BREAK**
 
 CRITICAL HITS
   By default, all weapons have a 5% chance to deal a critical, which deals
-  double damage compared to a normal shot.
+  double damage compared to a normal shot. Crits also are also twice as
+  likely to damage subsystems.
 
 EVASION
   Both your ship and the enemy's have a 15% evasion rate, which means that
@@ -119,6 +154,26 @@ SUBSYSTEM DAMAGE
   performing evasive maneuvers, and a damaged shield projector will disable
   your shield regeneration.
   
+STATUS EFFECTS
+  Status effects are applied via certain weapons or other events, and will
+  last for a certain amount of turns. Just before the start of each turn, 
+  all active status effects will inflict their... effects. Generally
+  speaking, damage over time will stack, while other debuffs will not.
+  
+**BREAK**
+
+CORROSION
+  Inflicts 3 kinetic damage per turn, ignoring shields; will not crit or
+  damage subsystems. Halves armor resistances.
+
+AFTERBURN
+  Inflicts 4 thermal damage per turn; will not crit or damage subsystems.
+  Adds 5 heat per turn.
+  
+ELECTROMAGNETIC PULSE
+  Temporarily paralyzes all subsystems; this is not the same as damaging a
+  subsystem, and paralyzed subsystems can still be damaged by weapons fire.
+
 **BREAK**
 
 REPAIR SHIP
@@ -135,7 +190,7 @@ SHUT DOWN SYSTEMS
   Shutting down your ship's systems will disable all onboard systems except
   for critical ones such as shields, engines, and life support. As your ship
   will not generate as much heat as it does during normal operation, your
-  cooling system will be able to remove more heat than usual; specifically,
+  cooling systems will be able to remove more heat than usual; specifically,
   they will remove an additional 20 heat. However, this will use up the
   turn.
 
@@ -150,11 +205,96 @@ DRONES
   decision. Each active drone will fire once.
 
 POINT-DEFENSE
-  Your point-defense guns, while active, will protect you from enemy
-  missiles. Moreover, if your enemy has active drones, they will shoot down
-  a random drone per turn right after your drones attack the enemy.
+  Your point-defense guns, while active, will counter weapons that state "no
+  PD" in their description. Most of such weapons, such as missiles, are
+  simply shot down by the PD and immediately blocked. Drones, on the other
+  hand, are not immediately countered by PD; instead, your point-defenses
+  will shoot down an active enemy drone per turn. Be warned, though, the
+  enemy ship is also equipped with point-defenses and can do the same.
 
 TURN END
   After your turn ends, the enemy ship will take their turn, after which it
   will be your turn again. This repeats until either your ship or the enemy
   ship is destroyed.
+
+**BREAK**
+
+TIPS
+  You are only given three weapon slots, so it is imperative that you pick
+  an effective combination.
+  
+  Have a weapon capable of dealing good damage to shields. For instance, if
+  you pick the Railgun, Rotary Cannon, and Missile Launcher, you will have a
+  hard time getting through the first line of defense as the former two are
+  kinetics and the latter is countered by PD, which cannot be disabled until
+  the shields are down.
+  
+  The Drone Swarm, Missile Launcher, Corrosion Missile, and Thermite Bomb
+  are all countered by an active PD. As a result, if you pick one of the
+  four, then you should also pick the Rotary Cannon or EMP Cannon so you can
+  knock out subsystems.
+  
+  The above two statements combined means that if you take two of the above
+  weapons, it will be difficult to make an effective weapon loadout. If you
+  take three of the above weapons, then your entire loadout will countered
+  by PD, leaving you unable to do any real damage.
+  
+**BREAK**
+  
+  The Rotary Cannon as a whole, although having less damage output than the
+  other weapons, is a very good utility weapon. As each shot in its
+  ten-round burst is calculated independently, it is ideal for hitting
+  targets with high evasion, and can also disable multiple subsystems in one
+  burst, even more so with its doubled crit rate, as critical hits are twice
+  as likely to damage a subsystem. Finally, the Rotary Cannon generates less
+  heat when compared to other weapons.
+  
+  The Railgun and Plasma Cannon are reliable damage-dealers; you can never
+  go wrong with taking both of them.
+  
+  The Beam Laser attempts to be a middle-ground between the two; if you are
+  taking a Rotary Cannon and Drone Swarm / Missile Launcher, then the Beam
+  Laser is a viable choice for your third weapon. Note that although it
+  generates the most heat out of all the weapons in the game, it does heat
+  up the enemy ship as well; if you are solely using your Beam Laser and
+  your enemy is solely firing a Plasma Cannon, the enemy ship will actually
+  overheat first.
+  
+**BREAK**
+
+  Remember that a ship with an active shield projector will regenerate two
+  shield at the start of every turn. This means that a Railgun shot will
+  usually only deal 8 damage to the armor, as the other 4 damage will go to
+  depleting the 2 shield. To deal the full 12 damage to the enemy's armor, 
+  knock out the shield projector.
+  
+  Similarly, remember that a ship will remove five heat at the start of
+  every turn. This means that in order to force the enemy ship to shut down, 
+  you must raise the enemy ship's heat to 106.
+
+  Despite your ship only having three weapon slots, the enemy ship is
+  actually equipped with five weapons, though most of the time, they will
+  be using their Plasma Cannon and Railgun.
+  
+  The enemy ship will prioritize repairing some components over others; most
+  notably, if the enemy's armor is sufficiently low, they will prioritize
+  repairing armor over the subsystems. If you have equipped a Drone Swarm, 
+  that would be a good time to launch your drones.
+  
+**BREAK**
+
+  As mentioned, shutting down your ship's systems only shuts down non-
+  critical components. This means that your ship's shields, engines, and
+  point-defenses will still be active when the enemy makes their move.
+  Moreover, if you have active drones, they will still attack the enemy
+  ship.
+  
+  When attacking drones, be it manually or via PD, a random drone will be
+  targeted each time. You (or your point-defenses) are simply targeting the
+  drone that is the easiest to hit at that moment, after all.
+  
+  Be aware that manually targeting drones only has a chance to destroy one, 
+  while an active PD is guaranteed to destroy a drone while also freeing you
+  up to attack the enemy ship in later turns. So if your PD is down, use
+  your turn to repair your point-defenses instead of attacking the enemy's
+  drones.

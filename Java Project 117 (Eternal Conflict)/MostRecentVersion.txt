@@ -1,23 +1,14 @@
 /**
  * A turn-based space combat game.
  * 
- * 0.4.0 alpha 8/21/2019
- * Added engines and shields as subsystems (alongside PD), which can be damaged via enemy fire.
- * Repairing your ship now gives you the option to repair a single damaged subsystem, or your armor.
- * Repairing armor now restores 15 health, from 10.
- * Critical hits now double the chance of damaging a subsystem.
- * Subsystem damage rate reduced to 10%, from 20%.
- * Added heat as a new mechanic.
- * In general, thermal weapons add the most heat, followed by EM, followed by kinetic. However, thermal
- * weapons also tend to add heat to the target ship.
- * Option to shut down systems and bleed off more heat than usual, but this uses up the turn.
- * An overheating ship must shut down its systems; the player can choose to override this, but at a 20%
- * chance of destroying their ship.
+ * 0.4.1 alpha 8/24/2019
+ * Weapons which add heat to the target ship no longer do so upon a miss.
+ * Added additional victory messages depending on the state of the player ship's armor.
  * 
  * @author Michael Yang
- * @version 0.4.0 alpha
+ * @version 0.4.1 alpha
  * @since   7/28/2019
- * @updated 8/21/2019
+ * @updated 8/24/2019
  */
 
 import java.util.Scanner;
@@ -25,7 +16,7 @@ import java.util.ArrayList;
 
 public class EternalConflict {
 	
-	public static final String VERSION = "0.4.0 alpha";
+	public static final String VERSION = "0.4.1 alpha";
 	
 	/*
 	 * Damage types:
@@ -56,6 +47,15 @@ public class EternalConflict {
 	 * PDF Point-Defenses (PD)
 	 * ENG Engines
 	 * SHL Shields
+	 */
+	
+	/*
+	 * Environments:
+	 * STPX Stellar Proximity
+	 * ASTR Asteroid Field
+	 * PDFA Planetary Defenses (Allied)
+	 * PDFE Planetary Defenses (Enemy)
+	 * FLBT Fleet Battle
 	 */
 	
 	private Ship player;
@@ -114,7 +114,7 @@ public class EternalConflict {
 	}
 	
 	public void printIntro() {
-		System.out.println("version " + VERSION + "");
+		System.out.println("version " + VERSION);
 		System.out.println("ETERNAL CONFLICT: A TURN-BASED SPACE COMBAT GAME\n");
 		System.out.println("  Since the year 2572, the Terran Federation and the Free Worlds have been");
 		System.out.println("  at odds over sovereignty of the Antollare system. What should've been a");
@@ -530,6 +530,7 @@ public class EternalConflict {
 		ship.repairPD();
 		ship.repairEngines();
 		ship.repairShields();
+		ship.applyStatusEffects();
 		printPlayerInfo();
 		printEnemyInfo();
 	}
@@ -664,8 +665,7 @@ public class EternalConflict {
 			System.out.println("  an electrical crackle. You can only briefly see the projectile as it");
 			System.out.println("  streaks towards your target.");
 			damageShip(target, 0, 12, standardCrit, false);
-			System.out.println("    Your Ship    -   8 Heat");
-			player.addHeat(8);
+			heatTarget(player, 12);
 			break;
 		case "PL":
 			System.out.println("\nPLASMA CANNON");
@@ -673,8 +673,7 @@ public class EternalConflict {
 			System.out.println("  discharges its payload, the bright blue cloud very visible on its path");
 			System.out.println("  towards the enemy ship.");
 			damageShip(target, 2, 12, standardCrit, false);
-			System.out.println("    Your Ship    -  12 Heat");
-			player.addHeat(12);
+			heatTarget(player, 18);
 			break;
 		case "RC":
 			System.out.println("\nROTARY CANNON");
@@ -684,8 +683,7 @@ public class EternalConflict {
 			for(int i = 0; i < 10; i++) {
 				damageShip(target, 0, 1, 2 * standardCrit, false);
 			}
-			System.out.println("    Your Ship    -   6 Heat");
-			player.addHeat(6);
+			heatTarget(player, 8);
 			break;
 		case "LZ":
 			System.out.println("\nBEAM LASER");
@@ -694,11 +692,11 @@ public class EternalConflict {
 			System.out.println("  difficult to keep the weapon focused in a single spot long enough to do");
 			System.out.println("  damage to the target, not to mention you've only got enough coolant for");
 			System.out.println("  a few seconds of fire at a time.");
-			damageShip(target, 1, 12, standardCrit, false);
-			System.out.println("    Your Ship    -  15 Heat");
-			System.out.println("    Enemy Ship   -   6 Heat");
-			player.addHeat(15);
-			enemy.addHeat(6);
+			boolean hit = damageShip(target, 1, 12, standardCrit, false);
+			heatTarget(player, 20);
+			if(hit) {
+				heatTarget(enemy, 8);
+			}
 			break;
 		case "ML":
 			System.out.println("\nMISSILE LAUNCHER");
@@ -716,13 +714,12 @@ public class EternalConflict {
 			player.consumeMunitions(0);
 			if(!(target instanceof Ship) || target instanceof Ship && !((Ship)target).getPDState()) {
 				damageShip(target, 1, 15, standardCrit, true);
+				heatTarget(player, 15);
+				heatTarget(enemy, 6);
 			} else {
 				System.out.println("    Miss         -  Enemy PD Destroyed Missile");
+				heatTarget(player, 15);
 			}
-			System.out.println("    Your Ship    -  10 Heat");
-			System.out.println("    Enemy Ship   -   3 Heat");
-			player.addHeat(10);
-			enemy.addHeat(3);
 			break;
 		case "DN":
 			System.out.println("\nDRONE SWARM");
@@ -768,13 +765,12 @@ public class EternalConflict {
 				attacker.consumeMunitions(0);
 				if(!player.getPDState()) {
 					damageShip(player, 1, 15, standardCrit, true);
+					heatTarget(enemy, 15);
+					heatTarget(player, 6);
 				} else {
 					System.out.println("    Miss         -  Your PD Destroyed Missile");
+					heatTarget(enemy, 15);
 				}
-				System.out.println("    Enemy Ship   -  10 Heat");
-				System.out.println("    Your Ship    -   3 Heat");
-				enemy.addHeat(10);
-				player.addHeat(3);
 			} else if(attacker.hasWeapon("RC")) {
 				System.out.println("\nROTARY CANNON");
 				System.out.println("  You see a muzzle flash coming from the enemy ship, but unlike that of a");
@@ -783,8 +779,7 @@ public class EternalConflict {
 				for(int i = 0; i < 10; i++) {
 					damageShip(player, 0, 1, 2 * standardCrit, false);
 				}
-				System.out.println("    Enemy Ship   -   6 Heat");
-				enemy.addHeat(6);
+				heatTarget(enemy, 8);
 			} else {
 					System.out.println("\nNO WEAPON");
 					System.out.println("  The enemy ship attempts to fire a weapon, but they soon realize that they");
@@ -797,15 +792,13 @@ public class EternalConflict {
 			System.out.println("  you see when you fire your plasma cannon. This time, however, you weren't");
 			System.out.println("  the one who pulled the trigger.");
 			damageShip(player, 2, 12, standardCrit, false);
-			System.out.println("    Enemy Ship   -  12 Heat");
-			enemy.addHeat(12);
+			heatTarget(enemy, 18);
 		} else if (attacker.hasWeapon("RG")) {
 			System.out.println("\nRAILGUN");
 			System.out.println("  A muzzle flash emanates from your opponent's railgun. You barely have");
 			System.out.println("  time to blink before the projectile reaches the vicinity of your ship.");
 			damageShip(player, 0, 12, standardCrit, false);
-			System.out.println("    Enemy Ship   -   8 Heat");
-			enemy.addHeat(8);
+			heatTarget(enemy, 12);
 		} else {
 			System.out.println("\nNO WEAPON");
 			System.out.println("  The enemy ship attempts to fire a weapon, but they soon realize that they");
@@ -814,7 +807,7 @@ public class EternalConflict {
 		}
 	}
 	
-	public void damageShip(Craft target, int damageType, double damage, double critRate, boolean alwaysAccurate) {
+	public boolean damageShip(Craft target, int damageType, double damage, double critRate, boolean alwaysAccurate) {
 		String type = "";
 		boolean crit = Math.random() < critRate;
 		if(crit) {
@@ -861,7 +854,7 @@ public class EternalConflict {
 					System.out.print(" (Critical)");
 				}
 				System.out.println();
-				return;
+				return true;
 			}
 			if(target.getArmor() == 0) {
 				
@@ -896,7 +889,7 @@ public class EternalConflict {
 						rollSubsystemDamage((Ship)target, standardSubDamage);
 					}
 				}
-				return;
+				return true;
 			}
 			target.damageHull(damage);
 			if(target == player) {
@@ -915,8 +908,10 @@ public class EternalConflict {
 					rollSubsystemDamage((Ship)target, standardSubDamage);
 				}
 			}
+			return true;
 		} else {
-				System.out.println("    Miss");
+			System.out.println("    Miss");
+			return false;
 		}
 	}
 	
@@ -963,6 +958,17 @@ public class EternalConflict {
 				break;
 			}
  		}
+	}
+	
+	public void heatTarget(Ship target, double heatAmount) {
+		if(target == player) {
+			System.out.printf("    Your Ship    -  %2.0f Heat", heatAmount);
+			target.addHeat(heatAmount);
+		} else {
+			System.out.printf("    Enemy Ship   -  %2.0f Heat", heatAmount);
+			target.addHeat(heatAmount);
+		}
+		System.out.println();
 	}
 	
 	public int chooseRepairTarget() {
@@ -1043,12 +1049,22 @@ public class EternalConflict {
 			System.out.println("\nVICTORY");
 			System.out.println("  Lining up your crosshairs on the target, you pull the trigger and");
 			System.out.println("  deliver a coup de grace on the disintegrating enemy frigate. Running a");
-			System.out.println("  scan on your ship's systems, you conclude that everything is still");
-			System.out.println("  operational; you were the victor. You quietly celebrate to yourself before");
-			System.out.println("  putting full power into your ship's impulse engines and searching for");
-			System.out.println("  another enemy to engage. It's only the first engagement in the battle, of");
-			System.out.println("  course, and you're confident in your ability to bring down another");
-			System.out.println("  adversary in the name of the Federation.");
+			if(player.getArmor() >= 30) {
+				System.out.println("  scan on your ship's systems, you conclude that everything is still");
+				System.out.println("  operational; you were the victor. You quietly celebrate to yourself before");
+				System.out.println("  putting full power into your ship's impulse engines and searching for");
+				System.out.println("  another enemy to engage. It's only the first engagement in the battle, of");
+				System.out.println("  course, and you're confident in your ability to bring down another");
+				System.out.println("  adversary in the name of the Federation.");
+			} else { //if(player.getArmor() < 30)
+				System.out.println("  scan on your ship's systems, you conclude that although you were the");
+				System.out.println("  victor, the engagement was still a close one. You quietly celebrate to");
+				System.out.println("  yourself before putting full power into your ship's impulse engines and");
+				System.out.println("  setting the course for a nearby Federate repair tender. Although you're");
+				System.out.println("  confident in your ability to pull off similar victories later on in the");
+				System.out.println("  battle, you certainly can't in this state, and it would be prudent to get");
+				System.out.println("  your ship patched up before you jump back into the fray.");
+			}
 		}
 	}
 }
