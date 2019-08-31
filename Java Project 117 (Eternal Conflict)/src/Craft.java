@@ -92,6 +92,10 @@ public abstract class Craft {
 		armorResist[type] = originalArmorResist[type];
 	}
 	
+	public double getOriginalArmorResist(int type) {
+		return originalArmorResist[type];
+	}
+	
 	public double getShield() {
 		return shield;
 	}
@@ -138,6 +142,10 @@ public abstract class Craft {
 	
 	public void revertShieldResist(int type) {
 		shieldResist[type] = originalShieldResist[type];
+	}
+	
+	public double getOriginalShieldResist(int type) {
+		return originalShieldResist[type];
 	}
 	
 	public double getRegen() {

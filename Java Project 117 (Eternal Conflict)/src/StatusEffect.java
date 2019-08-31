@@ -4,11 +4,6 @@
  */
 public class StatusEffect {
 
-	/*
-	 * COROS Corrosion
-	 * AFBRN Afterburn
-	 */
-	
 	private String type;
 	private int turns;
 	

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 public class Ship extends Craft {
 
+	private boolean isPlayer;
 	private boolean isDodging;
 	private boolean pdActive;
 	private double heat;
@@ -17,9 +18,11 @@ public class Ship extends Craft {
 	private ArrayList<Drone> drones;
 	private boolean dronesLaunched;
 	private boolean pdJustRepaired;
+	private ArrayList<StatusEffect> effects;
 	
-	public Ship(double hullI, double armorI, double shieldI, double shieldRegenI, double[] armorResistI, double[] shieldResistI, double evasionI, double heatCapacityI, double coolingAmountI, int[] munitionsI, String[] weaponsI) {
+	public Ship(boolean isPlayerI, double hullI, double armorI, double shieldI, double shieldRegenI, double[] armorResistI, double[] shieldResistI, double evasionI, double heatCapacityI, double coolingAmountI, int[] munitionsI, String[] weaponsI) {
 		super(hullI, armorI, shieldI, shieldRegenI, armorResistI, shieldResistI, evasionI);
+		isPlayer = isPlayerI;
 		isDodging = false;
 		pdActive = true;
 		heat = 0;
@@ -31,6 +34,14 @@ public class Ship extends Craft {
 		setDrones(5);
 		dronesLaunched = false;
 		pdJustRepaired = false;
+		effects = new ArrayList<StatusEffect>();
+	}
+	
+	public boolean regenShield() {
+		if(hasStatusEffect("EMPSE")) {
+			return false;
+		}
+		return super.regenShield();
 	}
 	
 	public void toggleDodging() {
@@ -138,6 +149,15 @@ public class Ship extends Craft {
 		}
 	}
 	
+	public String getDroneString() {
+		String result = "";
+		for(int i = 0; i < drones.size(); i++) {
+			result += drones.get(i).toString() + " ";
+		}
+		return result;
+	}
+	
+	
 	public boolean getPDRepairStatus() {
 		return pdJustRepaired;
 	}
@@ -153,12 +173,187 @@ public class Ship extends Craft {
 		}
 	}
 	
-	public String getDroneString() {
-		String result = "";
-		for(int i = 0; i < drones.size(); i++) {
-			result += drones.get(i).toString() + " ";
-		}
-		return result;
+	public void addStatusEffect(String type, int duration) {
+		effects.add(new StatusEffect(type, duration));
 	}
 	
+	public boolean hasStatusEffect(String type) {
+		for(int i = 0; i < effects.size(); i++) {
+			if(effects.get(i).getType().equals(type)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public void applyStatusEffects() {
+		if(effects.isEmpty()) {
+			return;
+		}
+		System.out.println("\nSTATUS EFFECTS");
+		for(int i = 0; i < effects.size(); i++) {
+			applyEffect(effects.get(i).getType());
+			System.out.printf("    Turns Left   -  %2d\n", effects.get(i).getTurns() - 1);
+			effects.get(i).decrementTurns();
+			if(effects.get(i).getTurns() <= 0) {
+				revertEffect(effects.get(i).getType());
+			}
+			if(effects.get(i).getTurns() <= 0) {
+				effects.remove(i);
+				i--;
+			}
+		}
+	}
+	
+	public void applyEffect(String type) {
+		switch(type) {
+		case "COROS":
+			System.out.println("  CORROSION");
+			damageShip(this, 0, 3, -1, true, true, false);
+			if(isPlayer) {
+				System.out.println("    Your Armor Resists Are Halved");
+			} else {
+				System.out.println("    Enemy Armor Resists Are Halved");
+			}
+			for(int i = 0; i <= 3; i++) {
+				if(getArmorResist(i) == getOriginalArmorResist(i)) {
+					setArmorResist(i, getArmorResist(i) / 2);
+				}
+			}
+			if(getArmorResist(0) < getOriginalArmorResist(0)) {
+				
+			}
+			break;
+		case "AFBRN":
+			System.out.println("  AFTERBURN");
+			damageShip(this, 1, 4, -1, true, true, false);
+			heatTarget(this, 5);
+			break;
+		case "EMPSE":
+			System.out.println("  ELECTROMAGNETIC PULSE");
+			if(isPlayer) {
+				System.out.println("    Your Subsystems Have Been Paralyzed");
+			} else {
+				System.out.println("    Enemy Subsystems Have Been Paralyzed");
+			}
+		}
+	}
+	
+	public void revertEffect(String type) {
+		switch(type) {
+		case "COROS":
+			revertArmorResist(0);
+			revertArmorResist(1);
+			revertArmorResist(2);
+			revertArmorResist(3);
+			break;
+		case "AFBRN":
+			break;
+		}
+	}
+	
+	public boolean damageShip(Craft target, int damageType, double damage, double critRate, boolean alwaysAccurate, boolean ignoreShield, boolean ignoreArmor) {
+		String type = "";
+		boolean crit = Math.random() < critRate;
+		if(crit) {
+			damage *= 2;
+		}
+		switch(damageType) {
+		case 0:
+			type = "Kinetic";
+			break;
+		case 1:
+			type = "Thermal";
+			break;
+		case 2:
+			type = "EM";
+			break;
+		case 3:
+			type = "Omni";
+			break;
+		}
+		if(alwaysAccurate || !target.getEngineState() || Math.random() > target.getEvasion()) {
+			if(ignoreShield || target.getShield() <= 0) {
+				
+			} else if(target.getShield() < (1 - target.getShieldResist(damageType)) * damage) {
+				double shieldTemp = target.getShield();
+				damage = damage - (shieldTemp / (1 - target.getShieldResist(damageType)));
+				target.setShield(0);
+				if(isPlayer) {
+					System.out.printf("    Your Shield  -  %5.2f " + type, shieldTemp);
+				} else {
+					System.out.printf("    Enemy Shield -  %5.2f " + type, shieldTemp);
+				}
+				if(crit) {
+					System.out.print(" (Critical)");
+				}
+				System.out.println();
+			} else {
+				target.damageShield(damage, damageType);
+				if(isPlayer) {
+					System.out.printf("    Your Shield  -  %5.2f " + type, (1 - target.getShieldResist(damageType)) * damage);
+				} else {
+					System.out.printf("    Enemy Shield -  %5.2f " + type, (1 - target.getShieldResist(damageType)) * damage);
+				}
+				if(crit) {
+					System.out.print(" (Critical)");
+				}
+				System.out.println();
+				return true;
+			}
+			if(ignoreArmor || target.getArmor() == 0) {
+				
+			} else if(target.getArmor() < (1 - target.getArmorResist(damageType)) * damage) {
+				double armorTemp = target.getArmor();
+				damage = damage - (target.getArmor() / (1 - target.getArmorResist(damageType)));
+				target.setArmor(0);
+				if(isPlayer) {
+					System.out.printf("    Your Armor   -  %5.2f " + type, armorTemp);
+				} else {
+					System.out.printf("    Enemy Armor  -  %5.2f " + type, armorTemp);
+				}
+				if(crit) {
+					System.out.print(" (Critical)");
+				}
+				System.out.println();
+			} else {
+				target.damageArmor(damage, damageType);
+				if(isPlayer) {
+					System.out.printf("    Your Armor   -  %5.2f " + type, (1 - target.getArmorResist(damageType)) * damage);
+				} else {
+					System.out.printf("    Enemy Armor  -  %5.2f " + type, (1 - target.getArmorResist(damageType)) * damage);
+				}
+				if(crit) {
+					System.out.print(" (Critical)");
+				}
+				System.out.println();
+				return true;
+			}
+			target.damageHull(damage);
+			if(isPlayer) {
+				System.out.printf("    Your Hull    -  %5.2f " + type, damage);
+			} else {
+				System.out.printf("    Enemy Hull   -  %5.2f " + type, damage);
+			}
+			if(crit) {
+				System.out.print(" (Critical)");
+			}
+			System.out.println();
+			return true;
+		} else {
+			System.out.println("    Miss");
+			return false;
+		}
+	}
+	
+	public void heatTarget(Ship target, double heatAmount) {
+		if(isPlayer) {
+			System.out.printf("    Your Ship    -  %2.0f Heat", heatAmount);
+			target.addHeat(heatAmount);
+		} else {
+			System.out.printf("    Enemy Ship   -  %2.0f Heat", heatAmount);
+			target.addHeat(heatAmount);
+		}
+		System.out.println();
+	}
 }
