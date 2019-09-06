@@ -388,7 +388,7 @@ public class EternalConflict {
 					enemy.toggleDrones();
 				}
 			}
-			if(!suicide) {
+			if(!suicide && !overheatFailure) {
 				nextPreTurn(enemy);
 			}
 			if(suicide || overheatFailure || enemy.getHull() <= 0) {
