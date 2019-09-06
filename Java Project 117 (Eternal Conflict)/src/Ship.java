@@ -187,10 +187,12 @@ public class Ship extends Craft {
 	}
 	
 	public void applyStatusEffects() {
+		System.out.println("\nSTATUS EFFECTS");
 		if(effects.isEmpty()) {
+			System.out.println("    None");
 			return;
 		}
-		System.out.println("\nSTATUS EFFECTS");
+		
 		for(int i = 0; i < effects.size(); i++) {
 			applyEffect(effects.get(i).getType());
 			System.out.printf("    Turns Left   -  %2d\n", effects.get(i).getTurns() - 1);
@@ -226,7 +228,7 @@ public class Ship extends Craft {
 			break;
 		case "AFBRN":
 			System.out.println("  AFTERBURN");
-			damageShip(this, 1, 4, -1, true, true, false);
+			damageShip(this, 1, 4, -1, true, false, false);
 			heatTarget(this, 5);
 			break;
 		case "EMPSE":
@@ -236,6 +238,7 @@ public class Ship extends Craft {
 			} else {
 				System.out.println("    Enemy Subsystems Have Been Paralyzed");
 			}
+			break;
 		}
 	}
 	

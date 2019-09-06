@@ -1,3 +1,10 @@
+0.6.0 alpha 9/6/2019
+ * Added environmental effects; each effect will last somewhere between 3 to 8 turns, after which there
+   will be a chance every turn to switch environments.
+ * Current environments include Open Space (no effects), Stellar Proximity, Asteroid Field, Planetary
+   Defenses (allied and enemy), and Fleet Battle, with more coming soon.
+ * Fixed bug where afterburn damage ignored shields.
+
 0.5.0 alpha 8/31/2019
  * Implemented status effects.
  * Added Corrosion Missile, Thermite Bomb, and EMP Cannon, which use the new status effects.

@@ -1,17 +1,16 @@
 /**
  * A turn-based space combat game.
  * 
- * 0.5.0 alpha 8/31/2019
- * Implemented status effects.
- * Added Corrosion Missile, Thermite Bomb, and EMP Cannon, which use the new status effects.
- * Thermite Bomb uses a new ammunition type.
- * Weapon select now begins from 1 instead of 0. Now you don't have to reach all the way across the
- * keyboard to equip a Railgun.
- * Added tips section to the help menu, as well as information about the new weapons.
+ * 0.6.0 alpha 9/6/2019
+ * Added environmental effects; each effect will last somewhere between 3 to 8 turns, after which there
+ * will be a chance every turn to switch environments.
+ * Current environments include Open Space (no effects), Stellar Proximity, Asteroid Field, Planetary
+ * Defenses (allied and enemy), and Fleet Battle, with more coming soon.
+ * Fixed bug where afterburn damage ignored shields.
  * 
  * @author Michael Yang
  * @since   7/28/2019
- * @updated 8/31/2019
+ * @updated 9/6/2019
  */
 
 import java.util.Scanner;
@@ -19,7 +18,7 @@ import java.util.ArrayList;
 
 public class EternalConflict {
 	
-	public static final String VERSION = "0.5.0 alpha";
+	public static final String VERSION = "0.6.0 alpha";
 	
 	/*
 	 * Damage types:
@@ -58,6 +57,7 @@ public class EternalConflict {
 	
 	/*
 	 * Environments:
+	 * NONE Open Space
 	 * STPX Stellar Proximity
 	 * ASTR Asteroid Field
 	 * PDFA Planetary Defenses (Allied)
@@ -75,17 +75,26 @@ public class EternalConflict {
 	private Ship player;
 	private Ship enemy;
 	private double standardEvasion;
+	private double environmentalEvasion;
 	private double standardCrit;
 	private double standardSubDamage;
+	private String currentEnvironment;
+	private int environmentTurns;
+	private String[] environments;
 	
 	public EternalConflict() {
 		standardEvasion = .15;
+		environmentalEvasion = standardEvasion;
 		standardCrit = .05;
 		standardSubDamage = .1;
 		player = new Ship(true, 20, 100, 40, 2, new double[] {0, .25, .5, 0}, new double[] {.5, .25, 0, 0}, standardEvasion, 100, 5, new int[2], null);
 		enemy = new Ship(false, 20, 100, 40, 2, new double[] {0, .25, .5, 0}, new double[] {.5, .25, 0, 0}, standardEvasion, 100, 5, new int[2], new String[] {"RG", "PL", "RC", "DN", "ML"});
 		enemy.setMunitions(0, 10);
 		enemy.setDrones(5);
+		currentEnvironment = "NONE";
+		environmentTurns = (int)(Math.random() * 6) + 3;
+		environments = new String[] {"NONE", "STPX", "ASTR", "PDFA", "PDFE", "FLBT"};
+		
 	}
 	
 	public static void main(String[] args) {
@@ -234,7 +243,6 @@ public class EternalConflict {
 		System.out.println();
 	}
 	
-
 	public void printOutro() {
 		System.out.println("\nETERNAL CONFLICT: A TURN-BASED SPACE COMBAT GAME\n");
 		System.out.println("  Version			" + VERSION);
@@ -364,7 +372,7 @@ public class EternalConflict {
 				System.out.println("  drones, aimed at the enemy ship. Whether or not they hit is another");
 				System.out.println("  question.");
 				for(int i = 0; i < player.getActiveDrones(); i++) {
-					damageShip(enemy, 1, 2, standardCrit, false, false, false);
+					damageShip(enemy, 1, 2, standardCrit, enemy.getEvasion(), false, false, false);
 				}
 			}
 			if(enemy.dronesActive() && enemy.getActiveDrones() <= 0) {
@@ -380,10 +388,12 @@ public class EternalConflict {
 					enemy.toggleDrones();
 				}
 			}
+			if(!suicide) {
+				nextPreTurn(enemy);
+			}
 			if(suicide || overheatFailure || enemy.getHull() <= 0) {
 				break;
 			}
-			enemy.applyStatusEffects();
 			Prompt.getString("\n  Press ENTER to continue");
 			startOfTurn(enemy);
 			System.out.println("\n  Opportunities come and go quickly in the heat of battle; the moment you");
@@ -452,7 +462,7 @@ public class EternalConflict {
 				System.out.println("  flashes appear in your view. The enemy's drones have opened fire on your");
 				System.out.println("  ship, and you hope your PD is operational.");
 				for(int i = 0; i < enemy.getActiveDrones(); i++) {
-					damageShip(player, 1, 2, standardCrit, false, false, false);
+					damageShip(player, 1, 2, standardCrit, player.getEvasion(), false, false, false);
 				}
 			}
 			if(player.dronesActive() && player.getActiveDrones() <= 0) {
@@ -468,10 +478,10 @@ public class EternalConflict {
 					player.toggleDrones();
 				}
 			}
+			nextPreTurn(player);
 			if(player.getHull() <= 0) {
 				break;
 			}
-			player.applyStatusEffects();
 			Prompt.getString("\n  Press ENTER to continue");
 			printPlayerInfo();
 			printEnemyInfo();
@@ -551,7 +561,7 @@ public class EternalConflict {
 	}
 	
 	public void startOfTurn(Ship ship) {
-		ship.revertEvasion();
+		ship.setEvasion(environmentalEvasion);
 		ship.regenShield();
 		ship.coolShip();
 		ship.repairPD();
@@ -611,6 +621,148 @@ public class EternalConflict {
 				System.out.println("    Drones  -  Inactive");
 			}
 		}
+	}
+	
+	public void nextPreTurn(Ship ship) {
+		Prompt.getString("\n  Press ENTER to continue");
+		applyEnvironmentalEffects(ship);
+		ship.applyStatusEffects();
+		if(ship.getHull() > 0 && Math.random() < .35 && environmentTurns <= 0) {
+			changeEnvironment();
+			environmentTurns = (int)(Math.random() * 6) + 3;
+		}
+	}
+	
+	public void applyEnvironmentalEffects(Ship ship) {
+		System.out.print("\nENVIRONMENT - ");
+		switch(currentEnvironment) {
+		case "NONE":
+			System.out.println("OPEN SPACE");
+			System.out.println("    No Effects");
+			break;
+		case "STPX":
+			System.out.println("STELLAR PROXIMITY");
+			heatTarget(ship, 8);
+			if(Math.random() < .1) {
+				System.out.println("  SOLAR FLARE");
+				heatTarget(ship, 8);
+				ship.addStatusEffect("AFBRN", 4);
+				System.out.println("    Effect       -   Afterburn (4 Turns)");
+				ship.addStatusEffect("EMPSE", 2);
+				System.out.println("    Effect       -   Electromagnetic Pulse (2 Turns)");
+			}
+			break;
+		case "ASTR":
+			System.out.println("ASTEROID FIELD");
+			int impacts = (int)(Math.random() * 3) + 1;
+			if(impacts == 1) {
+				System.out.println("  INCOMING ASTEROID (1)");
+			} else {
+				System.out.println("  INCOMING ASTEROIDS (" + impacts + ")");
+			}
+			for(int i = 0; i < impacts; i++) {
+				damageShip(ship, 0, 6, standardCrit, 3 * ship.getEvasion(), false, false, false);
+			}
+			break;
+		case "PDFA":
+			System.out.println("PLANETARY DEFENSES (ALLIED)");
+			if(ship == player) {
+				System.out.println("    No Effects");
+				return;
+			}
+			if(ship.getShield() >= 6) {
+				System.out.println("  PLASMA CANNON");
+				damageShip(ship, 2, 12, standardCrit, ship.getEvasion(), false, false, false);
+			} else {
+				System.out.println("  RAILGUN");
+				damageShip(ship, 0, 12, standardCrit, ship.getEvasion(), false, false, false);
+			}
+			break;
+		case "PDFE":
+			System.out.println("PLANETARY DEFENSES (ENEMY)");
+			if(ship != player) {
+				System.out.println("    No Effects");
+				return;
+			}
+			if(ship.getShield() >= 6) {
+				System.out.println("  PLASMA CANNON");
+				damageShip(ship, 2, 12, standardCrit, ship.getEvasion(), false, false, false);
+			} else {
+				System.out.println("  RAILGUN");
+				damageShip(ship, 0, 12, standardCrit, ship.getEvasion(), false, false, false);
+			}
+			break;
+		case "FLBT":
+			System.out.println("FLEET BATTLE");
+			System.out.println("  DREADNOUGHT CROSSFIRE");
+			for(int i = 0; i < 5; i++) {
+				if(ship.getShield() >= 6) {
+					damageShip(ship, 2, 12, standardCrit, 5 * ship.getEvasion(), false, false, false);
+				} else {
+					damageShip(ship, 0, 12, standardCrit, 5 * ship.getEvasion(), false, false, false);
+				}
+			}
+			break;
+		}
+		environmentTurns--;
+	}
+
+	public void changeEnvironment() {
+		System.out.print("\nENVIRONMENT CHANGE - ");
+		String newEnvironment = "";
+		do {
+			newEnvironment = environments[(int)(Math.random() * environments.length)];
+		} while(newEnvironment.equals(currentEnvironment));
+		switch(newEnvironment) {
+		case "NONE":
+			System.out.println("OPEN SPACE");
+			System.out.println("  The deadly tango between your ship and that of your adversary places both");
+			System.out.println("  of you back in open space. As you no longer have to think about the");
+			System.out.println("  the effects of the previous environment, you can now focus entirely on");
+			System.out.println("  blowing your enemy's ship into oblivion.");
+			break;
+		case "STPX":
+			System.out.println("STELLAR PROXIMITY");
+			System.out.println("  The combat maneuvers of you and the enemy ship have placed you rather");
+			System.out.println("  close to the system's sun. Although Antollare, a yellow dwarf, is somewhat");
+			System.out.println("  lukewarm on the grand scale of stars, even a \"cold\" star is hotter than");
+			System.out.println("  your ship can handle at this distance.");
+			break;
+		case "ASTR":
+			System.out.println("ASTEROID FIELD");
+			System.out.println("  As you clash with the enemy, trading blow after blow, the two of you wind");
+			System.out.println("  up in the midst of a nearby asteroid field. Although you remember reading");
+			System.out.println("  that the asteroids in such a field are supposed to be hundreds of miles");
+			System.out.println("  apart lest they clump together into a larger body, that doesn't seem to be");
+			System.out.println("  the case in this thicket. Your micrometeorite shielding will block out the");
+			System.out.println("  smaller particles, but you still have to watch out for the larger ones.");
+			break;
+		case "PDFA":
+			System.out.println("PLANETARY DEFENSES (ALLIED)");
+			System.out.println("  The combat maneuvers of you and your enemy have put both of your ships in");
+			System.out.println("  orbit around a nearby planet. Almost immediately, you receive a radio");
+			System.out.println("  message from ground forces telling you that their surface-to-orbit");
+			System.out.println("  defenses are online and that the enemy ship is on their sensors. The");
+			System.out.println("  Terran Federation must have recently re-taken this planet; good to have");
+			System.out.println("  some fire support.");
+			break;
+		case "PDFE":
+			System.out.println("PLANETARY DEFENSES (ENEMY)");
+			System.out.println("  The combat maneuvers of you and your enemy have put both of your ships in");
+			System.out.println("  orbit around a nearby planet. Immediately, targeting pings light up on");
+			System.out.println("  your display as planetside defenses lock onto your ship! This planet must");
+			System.out.println("  still be controlled by the Free Worlds!");
+			break;
+		case "FLBT":
+			System.out.println("FLEET BATTLE");
+			System.out.println("  While you are locked in combat with the enemy frigate, your sensors");
+			System.out.println("  suddenly detect multiple warp signatures. A few seconds later, several");
+			System.out.println("  Federate dreadnoughts, carriers, and battlecruisers drop out of warp");
+			System.out.println("  almost right on top of you, quickly followed by a Free Worlds fleet ready");
+			System.out.println("  to fight back. Things could get chaotic soon.");
+			break;
+		}
+		currentEnvironment = newEnvironment;
 	}
 	
 	public boolean overheatDecision() {
@@ -709,7 +861,7 @@ public class EternalConflict {
 			System.out.println("  Your ship's railgun charges and fires, releasing a loud boom followed by");
 			System.out.println("  an electrical crackle. You can only briefly see the projectile as it");
 			System.out.println("  streaks towards your target.");
-			damageShip(target, 0, 12, standardCrit, false, false, false);
+			damageShip(target, 0, 12, standardCrit, target.getEvasion(), false, false, false);
 			heatTarget(player, 12);
 			break;
 		case "PL":
@@ -717,7 +869,7 @@ public class EternalConflict {
 			System.out.println("  You hear a distinctly electrical sound as your onboard plasma cannon");
 			System.out.println("  discharges its payload, the bright blue cloud very visible on its path");
 			System.out.println("  towards the enemy ship.");
-			damageShip(target, 2, 12, standardCrit, false, false, false);
+			damageShip(target, 2, 12, standardCrit, target.getEvasion(), false, false, false);
 			heatTarget(player, 18);
 			break;
 		case "RC":
@@ -726,7 +878,7 @@ public class EternalConflict {
 			System.out.println("  described as. The torrent of 20mm shells is barely visible on their way");
 			System.out.println("  towards the enemy.");
 			for(int i = 0; i < 10; i++) {
-				damageShip(target, 0, 1, 2 * standardCrit, false, false, false);
+				damageShip(target, 0, 1, 2 * standardCrit, target.getEvasion(), false, false, false);
 			}
 			heatTarget(player, 8);
 			break;
@@ -737,7 +889,7 @@ public class EternalConflict {
 			System.out.println("  difficult to keep the weapon focused in a single spot long enough to do");
 			System.out.println("  damage to the target, not to mention you've only got enough coolant for");
 			System.out.println("  a few seconds of fire at a time.");
-			hit = damageShip(target, 1, 12, standardCrit, false, false, false);
+			hit = damageShip(target, 1, 12, standardCrit, target.getEvasion(), false, false, false);
 			heatTarget(player, 20);
 			if(hit) {
 				heatTarget(enemy, 8);
@@ -758,7 +910,7 @@ public class EternalConflict {
 			System.out.println("  opponent isn't packing active defenses.");
 			player.consumeMunitions(0);
 			if(!(target instanceof Ship) || target instanceof Ship && (((Ship)target).hasStatusEffect("EMPSE") || !((Ship)target).getPDState())) {
-				damageShip(target, 1, 15, standardCrit, true, false, false);
+				damageShip(target, 1, 15, standardCrit, target.getEvasion(), true, false, false);
 				heatTarget(player, 15);
 				heatTarget(enemy, 6);
 			} else {
@@ -786,7 +938,7 @@ public class EternalConflict {
 			System.out.println("\nDRONE LASER");
 			System.out.println("  Somehow you managed to mount a drone laser on your ship, thus wasting a");
 			System.out.println("  perfectly good hardpoint that could've been used to mount better weapons.");
-			damageShip(enemy, 1, 2, standardCrit, false, false, false);
+			damageShip(enemy, 1, 2, standardCrit, target.getEvasion(), false, false, false);
 			break;
 		case "CR":
 			System.out.println("\nCORROSION MISSILE");
@@ -803,7 +955,7 @@ public class EternalConflict {
 			System.out.println("  weaken the enemy's armor.");
 			player.consumeMunitions(0);
 			if(!(target instanceof Ship) || target instanceof Ship && (((Ship)target).hasStatusEffect("EMPSE") || !((Ship)target).getPDState())) {
-				damageShip(target, 0, 4, standardCrit, true, false, false);
+				damageShip(target, 0, 4, standardCrit, target.getEvasion(), true, false, false);
 				if(target instanceof Ship && target.getShield() <= 0) {
 					((Ship)target).addStatusEffect("COROS", 3);
 					System.out.println("    Effect       -   Corrosion (3 Turns)");
@@ -853,7 +1005,7 @@ public class EternalConflict {
 			System.out.println("  you've seen before. Although its raw damage output leaves something to be");
 			System.out.println("  desired, you hope it is just enough to get through the shields and thus");
 			System.out.println("  enable the weapon to temporarily disable your adversary's subsystems.");
-			hit = damageShip(target, 2, 4, standardCrit, false, false, false);
+			hit = damageShip(target, 2, 4, standardCrit, target.getEvasion(), false, false, false);
 			heatTarget(player, 14);
 			if(hit && target.getShield() <= 0 && target instanceof Ship) {
 				((Ship)target).addStatusEffect("EMPSE", 2);
@@ -864,15 +1016,15 @@ public class EternalConflict {
 	}
 	
 	public void underAttack(Ship attacker) {
-		if(attacker.hasWeapon("DN") && attacker.getActiveDrones() > 0 && !attacker.dronesActive() && !player.getPDState()) {
+		if(attacker.hasWeapon("DN") && attacker.getActiveDrones() > 0 && !attacker.dronesActive() && (!player.getPDState() || player.hasStatusEffect("EMPSE"))) {
 			System.out.println("\nDRONE SWARM");
 			System.out.println("  You see a large hatch on the keel of the enemy frigate slowly open up. In");
 			System.out.println("  rapid succession, five attack drones are deployed, and quickly close into");
 			System.out.println("  a tight orbit around your ship. Hopefully, you can destroy them before");
 			System.out.println("  they do the same.");
 			attacker.toggleDrones();
-		} else if (player.getEvasion() > standardEvasion) {
-			if(attacker.hasWeapon("ML") && attacker.getMunitions(0) > 0 && !player.getPDState()) {
+		} else if (player.getEvasion() > environmentalEvasion) {
+			if(attacker.hasWeapon("ML") && attacker.getMunitions(0) > 0 && (!player.getPDState() || player.hasStatusEffect("EMPSE"))) {
 				System.out.println("\nMISSILE LAUNCHER");
 				System.out.println("  You notice a hatch on top of the enemy ship open. A missile is then");
 				System.out.println("  launched, its exhaust trail very visible as it streaks towards you. You");
@@ -880,7 +1032,7 @@ public class EternalConflict {
 				System.out.println("  dodging this.");
 				attacker.consumeMunitions(0);
 				if(player.hasStatusEffect("EMPSE") || !player.getPDState()) {
-					damageShip(player, 1, 15, standardCrit, true, false, false);
+					damageShip(player, 1, 15, standardCrit, player.getEvasion(), true, false, false);
 					heatTarget(enemy, 15);
 					heatTarget(player, 6);
 				} else {
@@ -893,7 +1045,7 @@ public class EternalConflict {
 				System.out.println("  railgun, this one is a little more sustained. You deduce that the your");
 				System.out.println("  adversary fired his rotary cannon, and brace for a very deadly rainstorm.");
 				for(int i = 0; i < 10; i++) {
-					damageShip(player, 0, 1, 2 * standardCrit, false, false, false);
+					damageShip(player, 0, 1, 2 * standardCrit, player.getEvasion(), false, false, false);
 				}
 				heatTarget(enemy, 8);
 			} else {
@@ -907,13 +1059,13 @@ public class EternalConflict {
 			System.out.println("  A bright blue light appears in your view. A familiar sight; it's what");
 			System.out.println("  you see when you fire your plasma cannon. This time, however, you weren't");
 			System.out.println("  the one who pulled the trigger.");
-			damageShip(player, 2, 12, standardCrit, false, false, false);
+			damageShip(player, 2, 12, standardCrit, player.getEvasion(), false, false, false);
 			heatTarget(enemy, 18);
 		} else if (attacker.hasWeapon("RG")) {
 			System.out.println("\nRAILGUN");
 			System.out.println("  A muzzle flash emanates from your opponent's railgun. You barely have");
 			System.out.println("  time to blink before the projectile reaches the vicinity of your ship.");
-			damageShip(player, 0, 12, standardCrit, false, false, false);
+			damageShip(player, 0, 12, standardCrit, player.getEvasion(), false, false, false);
 			heatTarget(enemy, 12);
 		} else {
 			System.out.println("\nNO WEAPON");
@@ -923,7 +1075,7 @@ public class EternalConflict {
 		}
 	}
 	
-	public boolean damageShip(Craft target, int damageType, double damage, double critRate, boolean alwaysAccurate, boolean ignoreShield, boolean ignoreArmor) {
+	public boolean damageShip(Craft target, int damageType, double damage, double critRate, double evasionRate, boolean alwaysAccurate, boolean ignoreShield, boolean ignoreArmor) {
 		String type = "";
 		boolean crit = Math.random() < critRate;
 		if(crit) {
@@ -943,7 +1095,7 @@ public class EternalConflict {
 			type = "Omni";
 			break;
 		}
-		if(alwaysAccurate || target instanceof Ship && ((Ship)target).hasStatusEffect("EMPSE") || !target.getEngineState() || Math.random() > target.getEvasion()) {
+		if(alwaysAccurate || target instanceof Ship && ((Ship)target).hasStatusEffect("EMPSE") || !target.getEngineState() || Math.random() > evasionRate) {
 			if(ignoreShield || target.getShield() <= 0) {
 				
 			} else if(target.getShield() < (1 - target.getShieldResist(damageType)) * damage) {

@@ -176,6 +176,50 @@ ELECTROMAGNETIC PULSE
 
 **BREAK**
 
+ENVIRONMENTAL EFFECTS
+  There exist a myriad of environments, each with their own effects. Each
+  environment will last for at least three to eight turns, after which there
+  will be a 35% chance to change environments at the end of each turn (both
+  your's and your enemy's).
+  
+**BREAK**
+
+OPEN SPACE
+  The "default" environment. No effects.
+  
+STELLAR PROXIMITY
+  The engagement is moved close to the sun, which will add 8 heat per turn
+  to both ships. Moreover, there is a 10% chance for a solar flare per turn,
+  which will add an additional 8 heat, inflict the Afterburn status effect
+  for 4 turns, and inflict the Electromagnetic Pulse effect for 2 turns.
+  
+ASTEROID FIELD
+  You and your adversary find yourselves in an asteroid thicket. Every turn,
+  between 1 and 3 asteroids will head towards both ships, with hit chance
+  based off of triple the target's evasion rate. Each asteroid impact will
+  deal 6 kinetic damage, and since asteroids do not emit a heat signature,
+  they cannot be detected and destroyed by PD.
+
+**BREAK**
+
+PLANETARY DEFENSES (ALLIED / ENEMY)
+  The battle moves to the high orbit of a nearby planet, which is controlled
+  by either the Terran Federation or Free Worlds; this in turn determines
+  whether the planetary defenses are allied or not. After every turn, a
+  weapon shot (Railgun or Plasma Cannon depending on the target's shields)
+  is directed at either the player (if the defenses are hostile) or the
+  enemy (if they are allied).
+  
+FLEET BATTLE
+  A Federate and Free Worlds battle-group drop out of warp right on top of
+  you and begin exchanging blows; both you and the enemy are now caught in
+  the crossfire of multiple dreadnoughts. After every turn, five weapon
+  shots (depending on the target's shields, some will be Railgun, others
+  will be Plasma Cannon) are directed at both ships, with hit chance based
+  off of five times the target's evasion rate.
+
+**BREAK**
+
 REPAIR SHIP
   Choosing to repair your ship will give you the option to repair either
   your armor (restoring 15 points), or a damaged subsystem. All subsystems
