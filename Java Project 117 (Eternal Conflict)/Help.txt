@@ -216,7 +216,14 @@ FLEET BATTLE
   the crossfire of multiple dreadnoughts. After every turn, five weapon
   shots (depending on the target's shields, some will be Railgun, others
   will be Plasma Cannon) are directed at both ships, with hit chance based
-  off of five times the target's evasion rate.
+  off of either five times the target's evasion rate or a flat 40% dodge
+  chance, whichever is higher.
+  
+PLANETARY RINGS
+  Both ships find themselves in the rings of a gas giant in the system, and
+  the excess amount of particles in said rings interferes with their onboard
+  sensors, effectively doubling evasion rates and leaving all missile
+  weapons unable to get a lock.
 
 **BREAK**
 
@@ -317,8 +324,8 @@ TIPS
   you must raise the enemy ship's heat to 106.
 
   Despite your ship only having three weapon slots, the enemy ship is
-  actually equipped with five weapons, though most of the time, they will
-  be using their Plasma Cannon and Railgun.
+  actually equipped with five weapons; specifically, the Railgun, Plasma
+  Cannon, Rotary Cannon, Drone Swarm, and Missile Launcher.
   
   The enemy ship will prioritize repairing some components over others; most
   notably, if the enemy's armor is sufficiently low, they will prioritize

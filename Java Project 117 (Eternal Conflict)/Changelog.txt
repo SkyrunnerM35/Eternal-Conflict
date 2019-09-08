@@ -1,3 +1,11 @@
+0.6.1 alpha 9/7/2019
+ * Added the environmental effect Planetary Rings.
+ * Dodge rate for dreadnought volleys in the Fleet Battle environment will not drop below 40% anymore;
+   hence, getting caught in a Fleet Battle with your engines damaged is no longer a guaranteed death
+   sentence. This 40% minimum dodge rate does not apply to other environmental effects which do damage,
+   such as Planetary Defenses.
+ * Enemy ship should now make heavier use of its Missile Launcher.
+
 0.6.0 alpha 9/6/2019
  * Added environmental effects; each effect will last somewhere between 3 to 8 turns, after which there
    will be a chance every turn to switch environments.
