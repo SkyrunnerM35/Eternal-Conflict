@@ -1,3 +1,8 @@
+0.6.2 alpha 9/9/2019
+ * *insert Cirno Day comment here*
+ * Chance for catastrophic failure when overriding automatic shutdown is no longer a fixed 20%. Instead,
+   it now starts at 5% and increases by an additional 5% for every override performed.
+
 0.6.1 alpha 9/7/2019
  * Added the environmental effect Planetary Rings.
  * Dodge rate for dreadnought volleys in the Fleet Battle environment will not drop below 40% anymore;

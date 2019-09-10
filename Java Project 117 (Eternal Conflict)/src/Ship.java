@@ -19,6 +19,7 @@ public class Ship extends Craft {
 	private boolean dronesLaunched;
 	private boolean pdJustRepaired;
 	private ArrayList<StatusEffect> effects;
+	private double chanceToFail;
 	
 	public Ship(boolean isPlayerI, double hullI, double armorI, double shieldI, double shieldRegenI, double[] armorResistI, double[] shieldResistI, double evasionI, double heatCapacityI, double coolingAmountI, int[] munitionsI, String[] weaponsI) {
 		super(hullI, armorI, shieldI, shieldRegenI, armorResistI, shieldResistI, evasionI);
@@ -35,6 +36,7 @@ public class Ship extends Craft {
 		dronesLaunched = false;
 		pdJustRepaired = false;
 		effects = new ArrayList<StatusEffect>();
+		chanceToFail = .05;
 	}
 	
 	public boolean regenShield() {
@@ -222,9 +224,6 @@ public class Ship extends Craft {
 					setArmorResist(i, getArmorResist(i) / 2);
 				}
 			}
-			if(getArmorResist(0) < getOriginalArmorResist(0)) {
-				
-			}
 			break;
 		case "AFBRN":
 			System.out.println("  AFTERBURN");
@@ -251,6 +250,8 @@ public class Ship extends Craft {
 			revertArmorResist(3);
 			break;
 		case "AFBRN":
+			break;
+		case "EMPSE":
 			break;
 		}
 	}
@@ -358,5 +359,17 @@ public class Ship extends Craft {
 			target.addHeat(heatAmount);
 		}
 		System.out.println();
+	}
+	
+	public double getChanceToFail() {
+		return chanceToFail;
+	}
+	
+	public void setChanceToFail(double newChance) {
+		chanceToFail = newChance;
+	}
+	
+	public void addChanceToFail(double additionalChance) {
+		chanceToFail += additionalChance;
 	}
 }

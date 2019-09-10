@@ -1,17 +1,14 @@
 /**
  * A turn-based space combat game.
  * 
- * 0.6.1 alpha 9/7/2019
- * Added the environmental effect Planetary Rings.
- * Dodge rate for dreadnought volleys in the Fleet Battle environment will not drop below 40% anymore;
- * hence, getting caught in a Fleet Battle with your engines damaged is no longer a guaranteed death
- * sentence. This 40% minimum dodge rate does not apply to other environmental effects which do damage,
- * such as Planetary Defenses.
- * Enemy ship should now make heavier use of its Missile Launcher.
+ * 0.6.2 alpha 9/9/2019
+ * *insert Cirno Day comment here*
+ * Chance for catastrophic failure when overriding automatic shutdown is no longer a fixed 20%. Instead,
+ * it now starts at 5% and increases by an additional 5% for every override performed.
  * 
  * @author Michael Yang
  * @since   7/28/2019
- * @updated 9/7/2019
+ * @updated 9/9/2019
  */
 
 import java.util.Scanner;
@@ -19,7 +16,7 @@ import java.util.ArrayList;
 
 public class EternalConflict {
 	
-	public static final String VERSION = "0.6.1 alpha";
+	public static final String VERSION = "0.6.2 alpha";
 	
 	/*
 	 * Damage types:
@@ -270,7 +267,8 @@ public class EternalConflict {
 				override = overheatDecision();
 			}
 			if(override) {
-				if(Math.random() < .2) {
+				player.addChanceToFail(.05);
+				if(Math.random() < player.getChanceToFail()) {
 					overheatFailure = true;
 					override = false;
 				}
@@ -795,7 +793,7 @@ public class EternalConflict {
 		System.out.println("  safety reasons, though you understand that this will cost you your window");
 		System.out.println("  of opportunity. You contemplate the option to override the automatic");
 		System.out.println("  shutdown, acknowledging the risk of catastrophic failure.");
-		System.out.println("    1 - Override Shutdown");
+		System.out.println("    1 - Override Shutdown (" + (int)(100 * player.getChanceToFail()) + "% chance for ship destruction)");
 		System.out.println("    2 - Do Nothing\n");
 		return Prompt.getInt("  -> ", 1, 2) == 1;
 	}

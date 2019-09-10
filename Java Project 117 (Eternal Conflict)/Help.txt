@@ -26,8 +26,9 @@ HEAT
   system will remove 5 heat at the start of each turn, and you can use your
   turn to shut down your ship's systems, thus removing another 20 heat.
   An overheating ship must undergo an automatic shutdown, forfeiting the
-  turn. However, the player can choose to override this shutdown with a 20%
-  chance of catastrophic failure (destroying the ship).
+  turn. However, the player can choose to override this shutdown with a
+  chance for catastrophic failure (destroying the ship). This chance starts
+  at 5%, and every override will increase the chance by an additional 5%.
 
 **BREAK**
 
