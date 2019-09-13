@@ -1,4 +1,4 @@
-                                                                           | 77
+**BREAK** lines are used by the file reader.                               | 77
                                                                            
 OVERVIEW
   In order to win the game, you must destroy your opponent's hull before he
@@ -110,24 +110,33 @@ MISSILE LAUNCHER
   gunner. The Missile Launcher fires a single radar-guided missile that
   deals 15 thermal damage, adds 6 heat to the target, and hits with 100%
   accuracy regardless of the enemy's evasion. However, if your enemy has an
-  active PD, they will shoot down every missile you fire at them. The
-  launcher also has limited ammunition; you get ten missiles, so use them
-  wisely.
+  active PD, they will shoot down every missile. The launcher also has
+  limited ammunition; you get ten missiles, so use them wisely.
 
 CORROSION MISSILE
   Using the same launching system as the standard Missile Launcher, the
   Corrosion Missile functions similarly; you get finite ammunition and the
   missile is guaranteed to hit so long as the enemy's PD is down. But
   instead of a standard warhead, the Corrosion Missile carries a binary
-  compound that, upon mixing, forms a highly adhesive, corrosive gel that
-  quickly coats a solid surface. The missile itself deals 4 kinetic damage
-  on impact (just enough to defeat the 2 shield regenerated per turn), and
-  should the shields be down after the initial impact, it will apply the
+  compound that, forms a highly adhesive, corrosive gel. The missile itself
+  deals 4 kinetic damage on impact (enough to defeat shield regeneration),
+  and should the shields be down after the initial impact, it will apply the
   Corrosion status effect for 3 turns; if the shields are not down after the
   initial impact, the effect will not be applied. Both the Missile Launcher
   and Corrosion Missile draw from the same ammunition pool (the desired 
   warhead is attached to the fuselage just before firing), meaning that if
   you take both weapons, you will have twenty missiles.
+  
+DESIGNATOR MISSILE
+  If you can't stick a big gun on your ship, put it on another ship and aim
+  it with a small gun. This is the point of the Designator Missile, which is
+  a missile weapon that does 4 damage on impact and contains a probe which
+  calls down five weapon shots (Railgun and/or Plasma Cannon depending on
+  the target's shields) from nearby dreadnoughts; hit chance is based off of
+  either five times the target's evasion or a flat 40% dodge rate, whichever
+  is higher.
+  
+**BREAK**
   
 THERMITE BOMB
   The Thermite Bomb is an unguided payload, meaning that it is countered by
@@ -218,7 +227,8 @@ FLEET BATTLE
   shots (depending on the target's shields, some will be Railgun, others
   will be Plasma Cannon) are directed at both ships, with hit chance based
   off of either five times the target's evasion rate or a flat 40% dodge
-  chance, whichever is higher.
+  chance, whichever is higher; the effect is identical to that of the
+  Designator Missile, and stacks with said weapon.
   
 PLANETARY RINGS
   Both ships find themselves in the rings of a gas giant in the system, and
@@ -281,10 +291,10 @@ TIPS
   kinetics and the latter is countered by PD, which cannot be disabled until
   the shields are down.
   
-  The Drone Swarm, Missile Launcher, Corrosion Missile, and Thermite Bomb
-  are all countered by an active PD. As a result, if you pick one of the
-  four, then you should also pick the Rotary Cannon or EMP Cannon so you can
-  knock out subsystems.
+  The Drone Swarm, Missile Launcher, Corrosion Missile, Designator Missile,
+  and Thermite Bomb are all countered by an active PD. As a result, if you
+  pick one of the four, then you should also pick the Rotary Cannon or EMP
+  Cannon so you can knock out subsystems.
   
   The above two statements combined means that if you take two of the above
   weapons, it will be difficult to make an effective weapon loadout. If you
@@ -311,6 +321,10 @@ TIPS
   up the enemy ship as well; if you are solely using your Beam Laser and
   your enemy is solely firing a Plasma Cannon, the enemy ship will actually
   overheat first.
+  
+  The Designator Missile has the potential to deal extremely high damage, 
+  but since the dreadnoughts' hit rate is based off of five times the
+  target's evasion, the weapon heavily relies on chance.
   
 **BREAK**
 

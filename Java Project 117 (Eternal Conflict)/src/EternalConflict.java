@@ -1,14 +1,12 @@
 /**
  * A turn-based space combat game.
  * 
- * 0.6.2 alpha 9/9/2019
- * *insert Cirno Day comment here*
- * Chance for catastrophic failure when overriding automatic shutdown is no longer a fixed 20%. Instead,
- * it now starts at 5% and increases by an additional 5% for every override performed.
+ * 0.6.3 alpha 9/13/2019
+ * Added Designator Missile.
  * 
  * @author Michael Yang
  * @since   7/28/2019
- * @updated 9/9/2019
+ * @updated 9/13/2019
  */
 
 import java.util.Scanner;
@@ -16,7 +14,7 @@ import java.util.ArrayList;
 
 public class EternalConflict {
 	
-	public static final String VERSION = "0.6.2 alpha";
+	public static final String VERSION = "0.6.3 alpha";
 	
 	/*
 	 * Damage types:
@@ -38,6 +36,7 @@ public class EternalConflict {
 	 * CR Corrosion Missile
 	 * TB Thermite Bomb
 	 * EP EMP Cannon
+	 * DM Designator Missile
 	 */
 	
 	/*
@@ -500,7 +499,8 @@ public class EternalConflict {
 		System.out.println("    6 - " + expandWeaponSymbol("DN"));
 		System.out.println("    7 - " + expandWeaponSymbol("ML"));
 		System.out.println("    8 - " + expandWeaponSymbol("CR"));
-		System.out.println("    9 - " + expandWeaponSymbol("TB"));
+		System.out.println("    9 - " + expandWeaponSymbol("DM"));
+		System.out.println("    0 - " + expandWeaponSymbol("TB"));
 		System.out.println("  Shield Resistances	50% Kinetic, 25% Thermal,  0% EM");
 		System.out.println("  Armor Resistances	 0% Kinetic, 25% Thermal, 50% EM");
 		System.out.println("\n  Type in a three-digit number to choose your weapons. For instance, type");
@@ -550,6 +550,9 @@ public class EternalConflict {
 			player.setMunitions(0, player.getMunitions(0) + 10);
 			return "CR";
 		case 9:
+			player.setMunitions(0, player.getMunitions(1) + 10);
+			return "DM";
+		case 0:
 			player.setMunitions(1,  player.getMunitions(1) + 5);
 			return "TB";
 		}
@@ -870,6 +873,8 @@ public class EternalConflict {
 			return "Thermite Bomb        12 Heat, 4 Thermal for 3 Turns, 5 Heat for 3 Turns, no PD";
 		case "EP":
 			return "EMP Cannon            4 EM, paralyzes Subsystems for 2 Turns";
+		case "DM":
+			return "Designator Missile    4 Kinetic, calls down 5 Dreadnought Shots (12 Kinetic / EM each)";
 		}
 		return "THIS MESSAGE SHOULD NEVER APPEAR";
 	}
@@ -1044,9 +1049,54 @@ public class EternalConflict {
 				((Ship)target).addStatusEffect("EMPSE", 2);
 				System.out.println("    Effect       -   Electromagnetic Pulse (2 Turns)");
 			}
+			break;
+		case "DM":
+			System.out.println("\nDESIGNATOR MISSILE");
+			if(currentEnvironment.equals("PTRG")) {
+				System.out.println("  You attempt to get a lock on the enemy ship in order to fire a");
+				System.out.println("  missile, but the interference from the planet's rings is preventing");
+				System.out.println("  your computers from doing so. You eventually conclude that you won’t");
+				System.out.println("  be able to get a lock in time, and decide to use another weapon.");
+				return false;
+			} else if(player.getMunitions(0) <= 0) {
+				System.out.println("  The hatch on top of your frigate opens. Expecting the familiar rumble");
+				System.out.println("  of a missile launch, you instead hear and feel nothing. You suddenly");
+				System.out.println("  realize that you have run out of missiles. Fortunately, you still have");
+				System.out.println("  a window of opportunity, but you must choose another weapon quickly.");
+				return false;
+			}
+			System.out.println("  Your frigate's upper hatch opens, and the launch of a missile sends");
+			System.out.println("  tremors throughout your ship. Instead of a conventional warhead, the");
+			System.out.println("  missile you just fired contains a probe that will enable nearby Federate");
+			System.out.println("  dreadnoughts to direct a lethal barrage towards your adversary.");
+			player.consumeMunitions(0);
+			if(!(target instanceof Ship) || target instanceof Ship && (((Ship)target).hasStatusEffect("EMPSE") || !((Ship)target).getPDState())) {
+				damageShip(target, 0, 4, standardCrit, target.getEvasion(), true, false, false);
+				double dodgeRate;
+				for(int i = 0; i < 5; i++) {
+					dodgeRate = Math.max(5 * target.getEvasion(), .4);
+					if(target instanceof Ship && ((Ship)(target)).hasStatusEffect("EMPSE")) {
+						dodgeRate = .4;
+					}
+					if(Math.random() > dodgeRate) {
+						if(target.getShield() >= 6) {
+							damageShip(target, 2, 12, standardCrit, 5 * target.getEvasion(), true, false, false);
+						} else {
+							damageShip(target, 0, 12, standardCrit, 5 * target.getEvasion(), true, false, false);
+						}
+					} else {
+						System.out.println("    Miss");
+					}
+				}
+			} else {
+				System.out.println("    Miss         -  Enemy PD Destroyed Missile");
+			}
+			heatTarget(player, 12);
+			break;
 		}
 		return true;
 	}
+	
 	
 	public void underAttack(Ship attacker) {
 		if(attacker.hasWeapon("DN") && attacker.getActiveDrones() > 0 && !attacker.dronesActive() && (!player.getPDState() || player.hasStatusEffect("EMPSE"))) {

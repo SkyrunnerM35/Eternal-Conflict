@@ -1,3 +1,6 @@
+0.6.3 alpha 9/13/2019
+ * Added Designator Missile.
+
 0.6.2 alpha 9/9/2019
  * *insert Cirno Day comment here*
  * Chance for catastrophic failure when overriding automatic shutdown is no longer a fixed 20%. Instead,

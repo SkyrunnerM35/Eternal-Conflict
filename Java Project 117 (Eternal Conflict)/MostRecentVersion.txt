@@ -1,16 +1,14 @@
 /**
  * A turn-based space combat game.
  * 
- * 0.6.0 alpha 9/6/2019
- * Added environmental effects; each effect will last somewhere between 3 to 8 turns, after which there
- * will be a chance every turn to switch environments.
- * Current environments include Open Space (no effects), Stellar Proximity, Asteroid Field, Planetary
- * Defenses (allied and enemy), and Fleet Battle, with more coming soon.
- * Fixed bug where afterburn damage ignored shields.
+ * 0.6.2 alpha 9/9/2019
+ * *insert Cirno Day comment here*
+ * Chance for catastrophic failure when overriding automatic shutdown is no longer a fixed 20%. Instead,
+ * it now starts at 5% and increases by an additional 5% for every override performed.
  * 
  * @author Michael Yang
  * @since   7/28/2019
- * @updated 9/6/2019
+ * @updated 9/9/2019
  */
 
 import java.util.Scanner;
@@ -18,7 +16,7 @@ import java.util.ArrayList;
 
 public class EternalConflict {
 	
-	public static final String VERSION = "0.6.0 alpha";
+	public static final String VERSION = "0.6.2 alpha";
 	
 	/*
 	 * Damage types:
@@ -63,6 +61,7 @@ public class EternalConflict {
 	 * PDFA Planetary Defenses (Allied)
 	 * PDFE Planetary Defenses (Enemy)
 	 * FLBT Fleet Battle
+	 * PTRG Planetary Rings
 	 */
 	
 	/*
@@ -93,8 +92,7 @@ public class EternalConflict {
 		enemy.setDrones(5);
 		currentEnvironment = "NONE";
 		environmentTurns = (int)(Math.random() * 6) + 3;
-		environments = new String[] {"NONE", "STPX", "ASTR", "PDFA", "PDFE", "FLBT"};
-		
+		environments = new String[] {"NONE", "STPX", "ASTR", "PDFA", "PDFE", "FLBT", "PTRG"};
 	}
 	
 	public static void main(String[] args) {
@@ -269,7 +267,8 @@ public class EternalConflict {
 				override = overheatDecision();
 			}
 			if(override) {
-				if(Math.random() < .2) {
+				player.addChanceToFail(.05);
+				if(Math.random() < player.getChanceToFail()) {
 					overheatFailure = true;
 					override = false;
 				}
@@ -482,9 +481,6 @@ public class EternalConflict {
 			if(player.getHull() <= 0) {
 				break;
 			}
-			Prompt.getString("\n  Press ENTER to continue");
-			printPlayerInfo();
-			printEnemyInfo();
 			System.out.println("\n  You sigh in relief when your opponent loses his time to act. You prepare");
 			System.out.println("  to move into position to retaliate.");
 			Prompt.getString("\n  Press ENTER to continue");
@@ -634,6 +630,9 @@ public class EternalConflict {
 	}
 	
 	public void applyEnvironmentalEffects(Ship ship) {
+		if(!currentEnvironment.equals("PTRG")) {
+			environmentalEvasion = standardEvasion;
+		}
 		System.out.print("\nENVIRONMENT - ");
 		switch(currentEnvironment) {
 		case "NONE":
@@ -642,6 +641,7 @@ public class EternalConflict {
 			break;
 		case "STPX":
 			System.out.println("STELLAR PROXIMITY");
+			System.out.println("  RADIANT HEAT");
 			heatTarget(ship, 8);
 			if(Math.random() < .1) {
 				System.out.println("  SOLAR FLARE");
@@ -695,13 +695,29 @@ public class EternalConflict {
 		case "FLBT":
 			System.out.println("FLEET BATTLE");
 			System.out.println("  DREADNOUGHT CROSSFIRE");
+			double dodgeRate;
 			for(int i = 0; i < 5; i++) {
-				if(ship.getShield() >= 6) {
-					damageShip(ship, 2, 12, standardCrit, 5 * ship.getEvasion(), false, false, false);
+				dodgeRate = Math.max(5 * ship.getEvasion(), .4);
+				if(ship.hasStatusEffect("EMPSE")) {
+					dodgeRate = .4;
+				}
+				if(Math.random() > dodgeRate) {
+					if(ship.getShield() >= 6) {
+						damageShip(ship, 2, 12, standardCrit, 5 * ship.getEvasion(), true, false, false);
+					} else {
+						damageShip(ship, 0, 12, standardCrit, 5 * ship.getEvasion(), true, false, false);
+					}
 				} else {
-					damageShip(ship, 0, 12, standardCrit, 5 * ship.getEvasion(), false, false, false);
+					System.out.println("    Miss");
 				}
 			}
+			break;
+		case "PTRG":
+			System.out.println("PLANETARY RINGS");
+			System.out.println("  SENSORY INTERFERENCE");
+			System.out.println("    Evasion Rates are Effectively Doubled");
+			System.out.println("    Missile Weapons are Disabled");
+			environmentalEvasion = 2 * standardEvasion;
 			break;
 		}
 		environmentTurns--;
@@ -761,6 +777,11 @@ public class EternalConflict {
 			System.out.println("  almost right on top of you, quickly followed by a Free Worlds fleet ready");
 			System.out.println("  to fight back. Things could get chaotic soon.");
 			break;
+		case "PTRG":
+			System.out.println("PLANETARY RINGS");
+			System.out.println("  The engagement has shifted to within one of the rings of a nearby gas");
+			System.out.println("  giant. The extra debris is interfering with your sensors, making it that");
+			System.out.println("  much harder to keep a bead on your enemy.");
 		}
 		currentEnvironment = newEnvironment;
 	}
@@ -772,7 +793,7 @@ public class EternalConflict {
 		System.out.println("  safety reasons, though you understand that this will cost you your window");
 		System.out.println("  of opportunity. You contemplate the option to override the automatic");
 		System.out.println("  shutdown, acknowledging the risk of catastrophic failure.");
-		System.out.println("    1 - Override Shutdown");
+		System.out.println("    1 - Override Shutdown (" + (int)(100 * player.getChanceToFail()) + "% chance for ship destruction)");
 		System.out.println("    2 - Do Nothing\n");
 		return Prompt.getInt("  -> ", 1, 2) == 1;
 	}
@@ -897,7 +918,13 @@ public class EternalConflict {
 			break;
 		case "ML":
 			System.out.println("\nMISSILE LAUNCHER");
-			if(player.getMunitions(0) <= 0) {
+			if(currentEnvironment.equals("PTRG")) {
+				System.out.println("  You attempt to get a lock on the enemy ship in order to fire a");
+				System.out.println("  missile, but the interference from the planet's rings is preventing");
+				System.out.println("  your computers from doing so. You eventually conclude that you won’t");
+				System.out.println("  be able to get a lock in time, and decide to use another weapon.");
+				return false;
+			} else if(player.getMunitions(0) <= 0) {
 				System.out.println("  The hatch on top of your frigate opens. Expecting the familiar rumble");
 				System.out.println("  of a missile launch, you instead hear and feel nothing. You suddenly");
 				System.out.println("  realize that you have run out of missiles. Fortunately, you still have");
@@ -942,7 +969,13 @@ public class EternalConflict {
 			break;
 		case "CR":
 			System.out.println("\nCORROSION MISSILE");
-			if(player.getMunitions(0) <= 0) {
+			if(currentEnvironment.equals("PTRG")) {
+				System.out.println("  You attempt to get a lock on the enemy ship in order to fire a");
+				System.out.println("  missile, but the interference from the planet's rings is preventing");
+				System.out.println("  your computers from doing so. You eventually conclude that you won’t");
+				System.out.println("  be able to get a lock in time, and decide to use another weapon.");
+				return false;
+			} else if(player.getMunitions(0) <= 0) {
 				System.out.println("  The hatch on top of your frigate opens. Expecting the familiar rumble");
 				System.out.println("  of a missile launch, you instead hear and feel nothing. You suddenly");
 				System.out.println("  realize that you have run out of missiles. Fortunately, you still have");
@@ -1023,23 +1056,23 @@ public class EternalConflict {
 			System.out.println("  a tight orbit around your ship. Hopefully, you can destroy them before");
 			System.out.println("  they do the same.");
 			attacker.toggleDrones();
+		} else if(attacker.hasWeapon("ML") && !currentEnvironment.equals("PTRG") && attacker.getMunitions(0) > 0 && (!player.getPDState() || player.hasStatusEffect("EMPSE"))) {
+			System.out.println("\nMISSILE LAUNCHER");
+			System.out.println("  You notice a hatch on top of the enemy ship open. A missile is then");
+			System.out.println("  launched, its exhaust trail very visible as it streaks towards you. You");
+			System.out.println("  hope your active defenses are online, because there is no way you're");
+			System.out.println("  dodging this.");
+			attacker.consumeMunitions(0);
+			if(player.hasStatusEffect("EMPSE") || !player.getPDState()) {
+				damageShip(player, 1, 15, standardCrit, player.getEvasion(), true, false, false);
+				heatTarget(enemy, 15);
+				heatTarget(player, 6);
+			} else {
+				System.out.println("    Miss         -  Your PD Destroyed Missile");
+				heatTarget(enemy, 15);
+			}
 		} else if (player.getEvasion() > environmentalEvasion) {
-			if(attacker.hasWeapon("ML") && attacker.getMunitions(0) > 0 && (!player.getPDState() || player.hasStatusEffect("EMPSE"))) {
-				System.out.println("\nMISSILE LAUNCHER");
-				System.out.println("  You notice a hatch on top of the enemy ship open. A missile is then");
-				System.out.println("  launched, its exhaust trail very visible as it streaks towards you. You");
-				System.out.println("  hope your active defenses are online, because there is no way you're");
-				System.out.println("  dodging this.");
-				attacker.consumeMunitions(0);
-				if(player.hasStatusEffect("EMPSE") || !player.getPDState()) {
-					damageShip(player, 1, 15, standardCrit, player.getEvasion(), true, false, false);
-					heatTarget(enemy, 15);
-					heatTarget(player, 6);
-				} else {
-					System.out.println("    Miss         -  Your PD Destroyed Missile");
-					heatTarget(enemy, 15);
-				}
-			} else if(attacker.hasWeapon("RC")) {
+			if(attacker.hasWeapon("RC")) {
 				System.out.println("\nROTARY CANNON");
 				System.out.println("  You see a muzzle flash coming from the enemy ship, but unlike that of a");
 				System.out.println("  railgun, this one is a little more sustained. You deduce that the your");
