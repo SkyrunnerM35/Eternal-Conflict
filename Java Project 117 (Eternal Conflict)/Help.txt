@@ -3,7 +3,7 @@
 OVERVIEW
   In order to win the game, you must destroy your opponent's hull before he
   destroys yours. Both your ship and the enemy ship have 20 hull points, 
-  which is protected by 100 armor points and 40 shield points; both the
+  which is protected by 150 armor points and 40 shield points; both the
   armor and shield must be defeated before the hull can be damaged.
 
 RESISTANCES AND REGENERATION
@@ -11,7 +11,7 @@ RESISTANCES AND REGENERATION
   and electromagnetic. Shields and armor have different resistances to
   different types of damage, while hulls do not resist damage at all.
   Shields resist 50% of kinetic damage, 25% of thermal, and 0% of EM, while
-  armor resists 0% kinetic, 25% thermal, and 50% EM.
+  armor resists 10% kinetic, 35% thermal, and 60% EM.
 
   Shields automatically regenerate 2 points at the start of every turn (as
   long as your shield projector is undamaged), while armor must be
@@ -240,7 +240,7 @@ PLANETARY RINGS
 
 REPAIR SHIP
   Choosing to repair your ship will give you the option to repair either
-  your armor (restoring 15 points), or a damaged subsystem. All subsystems
+  your armor (restoring 10 points), or a damaged subsystem. All subsystems
   require another turn to re-activate after being repaired, but cannot be
   damaged again during this re-activation turn.
 

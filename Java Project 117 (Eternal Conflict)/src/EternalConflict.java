@@ -1,12 +1,17 @@
 /**
  * A turn-based space combat game.
  * 
- * 0.6.3 alpha 9/13/2019
- * Added Designator Missile.
+ * 0.6.4 alpha 9/20/2019
+ * Average per-turn damage has been increased as a result of the new environmental effects, which makes
+ * games last a lot shorter.
+ * To help balance this out, both ships now start with 150 armor, and armor resistances have been
+ * increased to 10% kinetic, 35% thermal, and 60% EM. This also means that kinetic weapons now synergize
+ * with the Corrosion Missile.
+ * As a result of the new resistances, repairing armor now restores 10 armor points instead of 15.
+ * Granted, everyone's going to die in the Area 51 raid, so no one will experience this update...
  * 
  * @author Michael Yang
  * @since   7/28/2019
- * @updated 9/13/2019
  */
 
 import java.util.Scanner;
@@ -14,7 +19,7 @@ import java.util.ArrayList;
 
 public class EternalConflict {
 	
-	public static final String VERSION = "0.6.3 alpha";
+	public static final String VERSION = "0.6.4 alpha";
 	
 	/*
 	 * Damage types:
@@ -85,8 +90,8 @@ public class EternalConflict {
 		environmentalEvasion = standardEvasion;
 		standardCrit = .05;
 		standardSubDamage = .1;
-		player = new Ship(true, 20, 100, 40, 2, new double[] {0, .25, .5, 0}, new double[] {.5, .25, 0, 0}, standardEvasion, 100, 5, new int[2], null);
-		enemy = new Ship(false, 20, 100, 40, 2, new double[] {0, .25, .5, 0}, new double[] {.5, .25, 0, 0}, standardEvasion, 100, 5, new int[2], new String[] {"RG", "PL", "RC", "DN", "ML"});
+		player = new Ship(true, 20, 150, 40, 2, new double[] {.1, .35, .6, 0}, new double[] {.5, .25, 0, 0}, standardEvasion, 100, 5, new int[2], null);
+		enemy = new Ship(false, 20, 150, 40, 2, new double[] {.1, .35, .6, 0}, new double[] {.5, .25, 0, 0}, standardEvasion, 100, 5, new int[2], new String[] {"RG", "PL", "RC", "DN", "ML"});
 		enemy.setMunitions(0, 10);
 		enemy.setDrones(5);
 		currentEnvironment = "NONE";
@@ -312,8 +317,8 @@ public class EternalConflict {
 						System.out.println("\nREPAIR ARMOR");
 						System.out.println("  You send a team to scour your ship's armor for any damage, making repairs");
 						System.out.println("  along the way. Half the battle is keeping your ship together, after all.");
-						System.out.println("    Your Armor   -  15 Repair");
-						player.healArmor(15);
+						System.out.println("    Your Armor   -  10 Repair");
+						player.healArmor(10);
 						break;
 					case 2:
 						System.out.println("\nREPAIR PD");
@@ -415,8 +420,8 @@ public class EternalConflict {
 						System.out.println("  your opponent more closely. You notice the sparks of welding torches and");
 						System.out.println("  the movement of nanites on their frigate; they seem to be concerned about");
 						System.out.println("  their survival.");
-						System.out.println("    Enemy Armor  -  15 Repair");
-						enemy.healArmor(15);
+						System.out.println("    Enemy Armor  -  10 Repair");
+						enemy.healArmor(10);
 					} else if(!enemy.getShieldRepairStatus() && !enemy.getShieldState()) {
 						System.out.println("\nREPAIR SHIELDS");
 						System.out.println("  The enemy ship doesn't seem to be doing much; suspicious, you observe");
@@ -501,8 +506,8 @@ public class EternalConflict {
 		System.out.println("    8 - " + expandWeaponSymbol("CR"));
 		System.out.println("    9 - " + expandWeaponSymbol("DM"));
 		System.out.println("    0 - " + expandWeaponSymbol("TB"));
-		System.out.println("  Shield Resistances	50% Kinetic, 25% Thermal,  0% EM");
-		System.out.println("  Armor Resistances	 0% Kinetic, 25% Thermal, 50% EM");
+		System.out.println("  Shield Resistances    50% Kinetic, 25% Thermal,  0% EM");
+		System.out.println("  Armor Resistances     10% Kinetic, 35% Thermal, 60% EM");
 		System.out.println("\n  Type in a three-digit number to choose your weapons. For instance, type");
 		System.out.println("  \"134\" to load a railgun into slot 1, a plasma cannon into slot 2, and a");
 		System.out.println("  rotary cannon in slot 3.\n");
@@ -848,8 +853,8 @@ public class EternalConflict {
 		System.out.println("    1 - " + expandWeaponSymbol(player.getWeapon(0)));
 		System.out.println("    2 - " + expandWeaponSymbol(player.getWeapon(1))); 
 		System.out.println("    3 - " + expandWeaponSymbol(player.getWeapon(2)));
-		System.out.println("  Shield Resistances	50% Kinetic, 25% Thermal,  0% EM");
-		System.out.println("  Armor Resistances	 0% Kinetic, 25% Thermal, 50% EM\n");
+		System.out.println("  Shield Resistances    50% Kinetic, 25% Thermal,  0% EM");
+		System.out.println("  Armor Resistances     10% Kinetic, 35% Thermal, 60% EM\n");
 		return Prompt.getInt("  -> ", 1, 3);
 	}
 	
