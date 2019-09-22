@@ -1,14 +1,9 @@
 /**
  * A turn-based space combat game.
  * 
- * 0.6.4 alpha 9/20/2019
- * Average per-turn damage has been increased as a result of the new environmental effects, which makes
- * games last a lot shorter.
- * To help balance this out, both ships now start with 150 armor, and armor resistances have been
- * increased to 10% kinetic, 35% thermal, and 60% EM. This also means that kinetic weapons now synergize
- * with the Corrosion Missile.
- * As a result of the new resistances, repairing armor now restores 10 armor points instead of 15.
- * Granted, everyone's going to die in the Area 51 raid, so no one will experience this update...
+ * 0.6.5 alpha 9/22/2019
+ * "Close-call" victory message now triggers when your armor is below 50, rather than 30 as it was
+ * before armor values were increased.
  * 
  * @author Michael Yang
  * @since   7/28/2019
@@ -19,7 +14,7 @@ import java.util.ArrayList;
 
 public class EternalConflict {
 	
-	public static final String VERSION = "0.6.4 alpha";
+	public static final String VERSION = "0.6.5 alpha";
 	
 	/*
 	 * Damage types:
@@ -1405,7 +1400,7 @@ public class EternalConflict {
 			System.out.println("\nVICTORY");
 			System.out.println("  Lining up your crosshairs on the target, you pull the trigger and");
 			System.out.println("  deliver a coup de grace on the disintegrating enemy frigate. Running a");
-			if(player.getArmor() >= 30) {
+			if(player.getArmor() >= 50) {
 				System.out.println("  scan on your ship's systems, you conclude that everything is still");
 				System.out.println("  operational; you were the victor. You quietly celebrate to yourself before");
 				System.out.println("  putting full power into your ship's impulse engines and searching for");

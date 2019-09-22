@@ -91,7 +91,7 @@ EMP CANNON
   from doing some of these things, you will have an advantage. The EMP
   Cannon discharges a single projectile that emits a strong magnetic field.
   It deals 4 EM damage, and should the shields be down after this, it will
-  apply the Electromagnetic Pulse status effect for 2 turns;  if the shields
+  apply the Electromagnetic Pulse status effect for 2 turns; if the shields
   are still up after the initial impact, the effect will not be applied.
 
 DRONE SWARM

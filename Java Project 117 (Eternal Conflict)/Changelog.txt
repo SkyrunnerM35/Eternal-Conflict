@@ -1,3 +1,7 @@
+0.6.5 alpha 9/22/2019
+ * "Close-call" victory message now triggers when your armor is below 50, rather than 30 as it was
+   before armor values were increased.
+
 0.6.4 alpha 9/20/2019
  * Average per-turn damage has been increased as a result of the new environmental effects, which makes
    games last a lot shorter.
