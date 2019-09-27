@@ -1,9 +1,8 @@
 /**
  * A turn-based space combat game.
  * 
- * 0.6.5 alpha 9/22/2019
- * "Close-call" victory message now triggers when your armor is below 50, rather than 30 as it was
- * before armor values were increased.
+ * 0.6.6 alpha 9/27/2019
+ * Added more victory messages depending on the player ship's armor; there are now four in total.
  * 
  * @author Michael Yang
  * @since   7/28/2019
@@ -14,7 +13,7 @@ import java.util.ArrayList;
 
 public class EternalConflict {
 	
-	public static final String VERSION = "0.6.5 alpha";
+	public static final String VERSION = "0.6.6 alpha";
 	
 	/*
 	 * Damage types:
@@ -1398,16 +1397,27 @@ public class EternalConflict {
 			System.out.println("  together in death, in peace.");
 		} else { //if(enemy.getHull() <= 0)
 			System.out.println("\nVICTORY");
-			System.out.println("  Lining up your crosshairs on the target, you pull the trigger and");
-			System.out.println("  deliver a coup de grace on the disintegrating enemy frigate. Running a");
-			if(player.getArmor() >= 50) {
+			if(player.getArmor() >= 100) {
+				System.out.println("  Lining up your crosshairs on the target, you pull the trigger and");
+				System.out.println("  deliver a coup de grace on the disintegrating enemy frigate. Running a");
 				System.out.println("  scan on your ship's systems, you conclude that everything is still");
 				System.out.println("  operational; you were the victor. You quietly celebrate to yourself before");
 				System.out.println("  putting full power into your ship's impulse engines and searching for");
 				System.out.println("  another enemy to engage. It's only the first engagement in the battle, of");
 				System.out.println("  course, and you're confident in your ability to bring down another");
 				System.out.println("  adversary in the name of the Federation.");
-			} else { //if(player.getArmor() < 30)
+			} else if(player.getArmor() >= 75) {
+				System.out.println("  Lining up your crosshairs on the target, you pull the trigger and");
+				System.out.println("  deliver a coup de grace on the disintegrating enemy frigate. Running a");
+				System.out.println("  scan on your ship's systems, you conclude that although most systems are");
+				System.out.println("  still operational, you did take a couple of blows in the engagement. You");
+				System.out.println("  quietly celebrate to yourself before ordering some repairs to your ship's");
+				System.out.println("  systems; it's only the first engagement in the battle, after all, and you");
+				System.out.println("  want to be prepared for your next fight lest you fail to make it home by");
+				System.out.println("  the end of the campaign.");
+			} else if(player.getArmor() >= 30) {
+				System.out.println("  Lining up your crosshairs on the target, you pull the trigger and");
+				System.out.println("  deliver a coup de grace on the disintegrating enemy frigate. Running a");
 				System.out.println("  scan on your ship's systems, you conclude that although you were the");
 				System.out.println("  victor, the engagement was still a close one. You quietly celebrate to");
 				System.out.println("  yourself before putting full power into your ship's impulse engines and");
@@ -1415,6 +1425,18 @@ public class EternalConflict {
 				System.out.println("  confident in your ability to pull off similar victories later on in the");
 				System.out.println("  battle, you certainly can't in this state, and it would be prudent to get");
 				System.out.println("  your ship patched up before you jump back into the fray.");
+			} else { //player.getArmor() < 30
+				System.out.println("  Lining up your crosshairs on the target, you pull the trigger for the coup");
+				System.out.println("  de grace. Not until the killing blow connects with the disintegrating");
+				System.out.println("  enemy frigate do you release a huge breath you didn't know you had been");
+				System.out.println("  holding. Your heart still pounds as you gaze through your cracked canopy");
+				System.out.println("  at the wreckage of your vanquished adversary, and you wonder what would've");
+				System.out.println("  happened had the enemy fired a split-second earlier. Finally mustering up");
+				System.out.println("  the strength to run a scan on your ship's systems, you realize that divine");
+				System.out.println("  intervention is the only thing keeping your frigate together. If you");
+				System.out.println("  hadn't believed in a deity before, you certainly do now, though you");
+				System.out.println("  quickly snap out of your trance and order that critical repairs be");
+				System.out.println("  performed so you can safely reach a repair tender as quickly as possible.");
 			}
 		}
 	}
