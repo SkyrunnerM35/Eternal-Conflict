@@ -1,8 +1,11 @@
 /**
  * A turn-based space combat game.
  * 
- * 0.6.6 alpha 9/27/2019
- * Added more victory messages depending on the player ship's armor; there are now four in total.
+ * 0.6.7 alpha 10/9/2019
+ * Added per-turn messages for shield regeneration and ship cooling; both are displayed right before the
+ * environmental effects message.
+ * Added "100% Hit Rate, no PD" to the description for the Designator Missile, reflecting its status as
+ * a missile weapon.
  * 
  * @author Michael Yang
  * @since   7/28/2019
@@ -13,7 +16,7 @@ import java.util.ArrayList;
 
 public class EternalConflict {
 	
-	public static final String VERSION = "0.6.6 alpha";
+	public static final String VERSION = "0.6.7 alpha";
 	
 	/*
 	 * Damage types:
@@ -311,7 +314,7 @@ public class EternalConflict {
 						System.out.println("\nREPAIR ARMOR");
 						System.out.println("  You send a team to scour your ship's armor for any damage, making repairs");
 						System.out.println("  along the way. Half the battle is keeping your ship together, after all.");
-						System.out.println("    Your Armor   -  10 Repair");
+						System.out.println("    Your Armor   -  10.00 Repair");
 						player.healArmor(10);
 						break;
 					case 2:
@@ -414,7 +417,7 @@ public class EternalConflict {
 						System.out.println("  your opponent more closely. You notice the sparks of welding torches and");
 						System.out.println("  the movement of nanites on their frigate; they seem to be concerned about");
 						System.out.println("  their survival.");
-						System.out.println("    Enemy Armor  -  10 Repair");
+						System.out.println("    Enemy Armor  -  10.00 Repair");
 						enemy.healArmor(10);
 					} else if(!enemy.getShieldRepairStatus() && !enemy.getShieldState()) {
 						System.out.println("\nREPAIR SHIELDS");
@@ -623,6 +626,24 @@ public class EternalConflict {
 	
 	public void nextPreTurn(Ship ship) {
 		Prompt.getString("\n  Press ENTER to continue");
+		System.out.println("\nSHIELD REGENERATION");
+		if(!ship.getShieldState()) {
+			System.out.println("    Shield Projector Disabled");
+		} else if(ship.hasStatusEffect("EMPSE")) {
+			System.out.println("    Shield Projector Paralyzed");
+		} else {
+			if(ship == player) {
+				System.out.println("    Your Shield  -   2.00 Regeneration");
+			} else {
+				System.out.println("    Enemy Shield -   2.00 Regeneration");
+			}
+		}
+		System.out.println("\nSHIP COOLING");
+		if(ship == player) {
+			System.out.println("    Your Ship    -  -5 Heat");
+		} else {
+			System.out.println("    Enemy Ship   -  -5 Heat");
+		}
 		applyEnvironmentalEffects(ship);
 		ship.applyStatusEffects();
 		if(ship.getHull() > 0 && Math.random() < .35 && environmentTurns <= 0) {
@@ -873,7 +894,7 @@ public class EternalConflict {
 		case "EP":
 			return "EMP Cannon            4 EM, paralyzes Subsystems for 2 Turns";
 		case "DM":
-			return "Designator Missile    4 Kinetic, calls down 5 Dreadnought Shots (12 Kinetic / EM each)";
+			return "Designator Missile    4 Kinetic, calls down 5 Dreadnought Shots (12 Kinetic / EM each), 100% Hit Rate, no PD";
 		}
 		return "THIS MESSAGE SHOULD NEVER APPEAR";
 	}
@@ -1376,7 +1397,7 @@ public class EternalConflict {
 			System.out.println("  to fail, with devastating results as your frigate is quickly and suddenly");
 			System.out.println("  disintegrated.");
 		} else if(player.getHull() <= 0 && enemy.getHull() <= 0) {
-			System.out.println("\nMUTUAL KILL");
+			System.out.println("\nMUTUAL KILL"); //This will never happen in-game.
 			System.out.println("  As your ship's internal structures sustain critical damage, you look out");
 			System.out.println("  through your fractured windscreen at the enemy frigate, likewise breaking");
 			System.out.println("  apart. With your life support systems failing, you draw in one last");

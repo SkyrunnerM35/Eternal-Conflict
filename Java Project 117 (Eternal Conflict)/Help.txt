@@ -326,13 +326,18 @@ TIPS
   but since the dreadnoughts' hit rate is based off of five times the
   target's evasion, the weapon heavily relies on chance.
   
+  Remember that the EMP Cannon and Corrosion Missile will only apply their
+  status effects if the enemy's shields are down after the initial impact
+  (which often does just enough damage to overcome shield regeneration).
+  If the shields are still up after this, the effect will not be applied.
+  
 **BREAK**
 
   Remember that a ship with an active shield projector will regenerate two
   shield at the start of every turn. This means that a Railgun shot will
-  usually only deal 8 damage to the armor, as the other 4 damage will go to
-  depleting the 2 shield. To deal the full 12 damage to the enemy's armor, 
-  knock out the shield projector.
+  usually only deal 7.2 damage to the armor, as the other 4 damage will go
+  to depleting the 2 shield. To deal the full 10.8 damage to the enemy's
+  armor, knock out the shield projector.
   
   Similarly, remember that a ship will remove five heat at the start of
   every turn. This means that in order to force the enemy ship to shut down, 
