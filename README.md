@@ -5,8 +5,8 @@ To launch the game, run EternalConflict.java.
 
 Author: Michael Yang
 
-Version: 0.6.7 alpha
+Version: 0.6.8 alpha
 
 Since: 7/28/2019
 
-Last updated: 10/9/2019
+Last updated: 12/17/2019
