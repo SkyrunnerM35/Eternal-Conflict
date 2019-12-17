@@ -40,6 +40,7 @@ public abstract class Craft {
 		shieldState = true;
 		shieldsJustRepaired = false;
 	}
+	
 	public double getHull() {
 		return hull;
 	}

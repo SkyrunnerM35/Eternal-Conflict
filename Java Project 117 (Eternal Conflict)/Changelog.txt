@@ -1,3 +1,6 @@
+0.6.8 alpha 12/17/2019
+ * Added ability to view credits in main menu.
+
 0.6.7 alpha 10/9/2019
  * Added per-turn messages for shield regeneration and ship cooling; both are displayed right before the
    environmental effects message.
