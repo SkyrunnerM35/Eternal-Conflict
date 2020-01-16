@@ -1,3 +1,13 @@
+0.6.9 alpha 1/16/2020
+ * Nice.
+ * This is technically 0.7.0, but come on.
+ * Engines and shields now have their own health, which is reduced by 1 every time an attack rolls to
+ * damage that subsystem. A subsystem is disabled when its health is reduced to zero.
+ * PD does not have this mechanic; it is still knocked out in one hit.
+ * Because of this, it is now possible to repair a subsystem even if it is operational, so long as its
+ * health is less than full. Disabled subsystems still require a turn to re-activate.
+ * As a result, subsystem damage rate is increased to 20%, from 10%.
+
 0.6.8 alpha 12/17/2019
  * Added ability to view credits in main menu.
 

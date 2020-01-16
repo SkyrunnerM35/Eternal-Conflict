@@ -44,9 +44,9 @@ TURNS
 SHIELD REGEN, SHIP COOLING, SUBSYSTEM ACTIVATION, AND DECISION
   At the start of each turn, your shields will regenerate 2 points if they
   are damaged, as mentioned above. Meanwhile, your onboard cooling systems
-  will remove 5 heat. Moreover, if any subsystems were repaired in the
-  previous turn, they will re-activate in this turn. During each turn, you
-  can do one of five actions; fire weapons, repair your ship, attempt to
+  will remove 5 heat. Moreover, if any disabled subsystems were repaired in
+  the previous turn, they will re-activate in this turn. During each turn, 
+  you can do one of five actions; fire weapons, repair your ship, attempt to
   dodge enemy fire, shut down your systems, or self-destruct.
 
 FIRE WEAPONS
@@ -157,12 +157,15 @@ EVASION
   your shot may miss the enemy, and vice versa.
   
 SUBSYSTEM DAMAGE
-  Any shot that damages your armor or hull will have a 10% chance of
-  damaging a subsystem; only one subsystem may be damaged with each shot. A
-  damaged point-defense system will open you up to certain weapons, a
-  crippled engine will set your evasion to zero and prevent you from
-  performing evasive maneuvers, and a damaged shield projector will disable
-  your shield regeneration.
+  Any shot that damages your armor or hull will have a 20% chance of
+  damaging a subsystem; only one subsystem may be damaged with each shot.
+  Engines and shield projectors require five hits to disable, while point-
+  defenses can be knocked out in one shot as the turrets are mounted on the
+  exterior of the ship and are thus more exposed to weapons fire. A damaged
+  point-defense system will open you up to certain weapons, a crippled
+  engine will set your evasion to zero and prevent you from performing
+  evasive maneuvers, and a damaged shield projector will disable your
+  shield regeneration.
   
 STATUS EFFECTS
   Status effects are applied via certain weapons or other events, and will
@@ -240,9 +243,10 @@ PLANETARY RINGS
 
 REPAIR SHIP
   Choosing to repair your ship will give you the option to repair either
-  your armor (restoring 10 points), or a damaged subsystem. All subsystems
-  require another turn to re-activate after being repaired, but cannot be
-  damaged again during this re-activation turn.
+  your armor (restoring 10 points), or a damaged subsystem. Repairing a
+  subsystem restores it to full health and will put it back online if it is
+  disabled; disabled subsystems require another turn to re-activate after
+  being repaired, but cannot be damaged during this re-activation turn.
 
 EVASIVE MANEUVERS
   Choosing to try and dodge enemy fire will double your evasion rate to 30%

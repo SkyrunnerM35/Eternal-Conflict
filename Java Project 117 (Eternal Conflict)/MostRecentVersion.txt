@@ -1,11 +1,8 @@
 /**
  * A turn-based space combat game.
  * 
- * 0.6.7 alpha 10/9/2019
- * Added per-turn messages for shield regeneration and ship cooling; both are displayed right before the
- * environmental effects message.
- * Added "100% Hit Rate, no PD" to the description for the Designator Missile, reflecting its status as
- * a missile weapon.
+ * 0.6.8 alpha 12/17/2019
+ * Added ability to view credits in main menu.
  * 
  * @author Michael Yang
  * @since   7/28/2019
@@ -16,7 +13,7 @@ import java.util.ArrayList;
 
 public class EternalConflict {
 	
-	public static final String VERSION = "0.6.7 alpha";
+	public static final String VERSION = "0.6.8 alpha";
 	
 	/*
 	 * Damage types:
@@ -110,8 +107,9 @@ public class EternalConflict {
 			System.out.println("  2 - Help");
 			System.out.println("  3 - Lore");
 			System.out.println("  4 - Version History");
-			System.out.println("  5 - Quit\n");
-			int choice = Prompt.getInt("  -> ", 1, 5);
+			System.out.println("  5 - Credits");
+			System.out.println("  6 - Quit\n");
+			int choice = Prompt.getInt("  -> ", 1, 6);
 			switch(choice) {
 			case 1:
 				beginGame();
@@ -127,6 +125,12 @@ public class EternalConflict {
 				printChangelog();
 				break;
 			case 5:
+				System.out.println("\nCREDITS");
+				printCredits();
+				Prompt.getString("\n  Press ENTER to continue");
+				System.out.println();
+				break;
+			case 6:
 				done = true;
 				System.out.println("\n  You should at least try to put up a fight before surrendering...");
 				break;
@@ -242,13 +246,17 @@ public class EternalConflict {
 		System.out.println();
 	}
 	
-	public void printOutro() {
+	public void printCredits() {
 		System.out.println("\nETERNAL CONFLICT: A TURN-BASED SPACE COMBAT GAME\n");
 		System.out.println("  Version			" + VERSION);
 		System.out.println("  Design			Michael Yang");
 		System.out.println("  Programming			Michael Yang");
 		System.out.println("  Story / Writing		Michael Yang");
 		System.out.println("  VERY LOOSELY inspired by FTL: Faster than Light");
+	}
+	
+	public void printOutro() {
+		printCredits();
 		System.out.println("\nThank you for playing, and have a nice day!\n\n\n");
 	}
 	

@@ -5,8 +5,8 @@
 
 public class Drone extends Craft {
 
-	public Drone(double hullI, double armorI, double shieldI, double shieldRegenI, double[] armorResistI, double [] shieldResistI, double evasionI) {
-		super(hullI, armorI, shieldI, shieldRegenI, armorResistI, shieldResistI, evasionI);
+	public Drone(double hullI, double armorI, double shieldI, double shieldRegenI, double[] armorResistI, double [] shieldResistI, double evasionI, int engineHealthI, int shieldHealthI) {
+		super(hullI, armorI, shieldI, shieldRegenI, armorResistI, shieldResistI, evasionI, engineHealthI, shieldHealthI);
 	}
 	
 	public String toString() {

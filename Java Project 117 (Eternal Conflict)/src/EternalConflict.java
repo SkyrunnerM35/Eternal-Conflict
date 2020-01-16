@@ -1,8 +1,15 @@
 /**
  * A turn-based space combat game.
  * 
- * 0.6.8 alpha 12/17/2019
- * Added ability to view credits in main menu.
+ * 0.6.9 alpha 1/16/2020
+ * Nice.
+ * This is technically 0.7.0, but come on.
+ * Engines and shields now have their own health, which is reduced by 1 every time an attack rolls to
+ * damage that subsystem. A subsystem is disabled when its health is reduced to zero.
+ * PD does not have this mechanic; it is still knocked out in one hit.
+ * Because of this, it is now possible to repair a subsystem even if it is operational, so long as its
+ * health is less than full. Disabled subsystems still require a turn to re-activate.
+ * As a result, subsystem damage rate is increased to 20%, from 10%.
  * 
  * @author Michael Yang
  * @since   7/28/2019
@@ -13,7 +20,7 @@ import java.util.ArrayList;
 
 public class EternalConflict {
 	
-	public static final String VERSION = "0.6.8 alpha";
+	public static final String VERSION = "0.6.9 alpha";
 	
 	/*
 	 * Damage types:
@@ -83,9 +90,9 @@ public class EternalConflict {
 		standardEvasion = .15;
 		environmentalEvasion = standardEvasion;
 		standardCrit = .05;
-		standardSubDamage = .1;
-		player = new Ship(true, 20, 150, 40, 2, new double[] {.1, .35, .6, 0}, new double[] {.5, .25, 0, 0}, standardEvasion, 100, 5, new int[2], null);
-		enemy = new Ship(false, 20, 150, 40, 2, new double[] {.1, .35, .6, 0}, new double[] {.5, .25, 0, 0}, standardEvasion, 100, 5, new int[2], new String[] {"RG", "PL", "RC", "DN", "ML"});
+		standardSubDamage = .2;
+		player = new Ship(true, 20, 150, 40, 2, new double[] {.1, .35, .6, 0}, new double[] {.5, .25, 0, 0}, standardEvasion, 100, 5, new int[2], null, 5, 5);
+		enemy = new Ship(false, 20, 150, 40, 2, new double[] {.1, .35, .6, 0}, new double[] {.5, .25, 0, 0}, standardEvasion, 100, 5, new int[2], new String[] {"RG", "PL", "RC", "DN", "ML"}, 5, 5);
 		enemy.setMunitions(0, 10);
 		enemy.setDrones(5);
 		currentEnvironment = "NONE";
@@ -287,7 +294,7 @@ public class EternalConflict {
 				System.out.println("  save for critical ones such as shields and life support. You lament losing");
 				System.out.println("  your chance to act, but as the alternative could entail destruction of");
 				System.out.println("  your ship, you deem this to be acceptable.");
-				System.out.println("    Your Ship    - -20 Heat");
+				System.out.println("    Your Ship     - -20 Heat");
 				player.removeHeat(20);
 			}
 			if(!overheat || override) {
@@ -322,7 +329,7 @@ public class EternalConflict {
 						System.out.println("\nREPAIR ARMOR");
 						System.out.println("  You send a team to scour your ship's armor for any damage, making repairs");
 						System.out.println("  along the way. Half the battle is keeping your ship together, after all.");
-						System.out.println("    Your Armor   -  10.00 Repair");
+						System.out.println("    Your Armor    -  10.00 Repair");
 						player.healArmor(10);
 						break;
 					case 2:
@@ -338,8 +345,13 @@ public class EternalConflict {
 						System.out.println("  You order a repair team to get your engines back in working order. You");
 						System.out.println("  seem to be getting sick of giving your enemy easy hits, and want to be");
 						System.out.println("  able to start dodging shots again.");
-						System.out.println("    Your Engines Have Been Repaired (One Turn Needed to Re-Activate)");
-						player.toggleEngineRepair();
+						System.out.print("    Your Engines  -  5 Repair");
+						if(!player.getEngineState()) {
+							player.toggleEngineRepair();
+							System.out.print(" (One Turn Needed to Re-Activate)");
+						}
+						player.healEngines(5);
+						System.out.println();
 						break;
 					case 4:
 						System.out.println("\nREPAIR SHIELDS");
@@ -347,8 +359,13 @@ public class EternalConflict {
 						System.out.println("  yours seem to be disabled at this moment. Seeking to rectify this, you");
 						System.out.println("  order a team to check out your shield projector and get it functioning");
 						System.out.println("  again.");
-						System.out.println("    Your Shield Projector Has Been Repaired (One Turn Needed to Re-Activate)");
-						player.toggleShieldRepair();
+						System.out.print("    Your Shields  -  5 Repair");
+						if(!player.getShieldState()) {
+							player.toggleShieldRepair();
+							System.out.print(" (One Turn Needed to Re-Activate)");
+						}
+						player.healShields(5);
+						System.out.println();
 						break;
 					}
 					break;
@@ -415,7 +432,7 @@ public class EternalConflict {
 				System.out.println("  as most systems save for critical ones having been shut down. The enemy");
 				System.out.println("  ship must've overheated during the engagement, and has shut down their");
 				System.out.println("  systems to bleed off heat.");
-				System.out.println("    Enemy Ship   - -20 Heat");
+				System.out.println("    Enemy Ship    - -20 Heat");
 				enemy.removeHeat(20);
 			} else {
 				if(Math.random() < .35 && (enemy.getArmor() <= 25 || !enemy.getPDState() || !enemy.getEngineState() || !enemy.getShieldState())) {
@@ -425,16 +442,21 @@ public class EternalConflict {
 						System.out.println("  your opponent more closely. You notice the sparks of welding torches and");
 						System.out.println("  the movement of nanites on their frigate; they seem to be concerned about");
 						System.out.println("  their survival.");
-						System.out.println("    Enemy Armor  -  10.00 Repair");
+						System.out.println("    Enemy Armor   -  10.00 Repair");
 						enemy.healArmor(10);
-					} else if(!enemy.getShieldRepairStatus() && !enemy.getShieldState()) {
+					} else if(!enemy.getShieldRepairStatus() && enemy.getShieldHealth() <= 0) {
 						System.out.println("\nREPAIR SHIELDS");
 						System.out.println("  The enemy ship doesn't seem to be doing much; suspicious, you observe");
 						System.out.println("  your opponent more closely. You notice a quick pulse of their shields; ");
 						System.out.println("  they must've repaired their shield projector, though you deduce you have");
 						System.out.println("  some time before they fully re-activate.");
-						System.out.println("    Enemy Shield Projector Has Been Repaired (One Turn Needed to Re-Activate)");
-						enemy.toggleShieldRepair();
+						System.out.print("    Enemy Shields -  5 Repair");
+						if(!enemy.getShieldState()) {
+							enemy.toggleShieldRepair();
+							System.out.print(" (One Turn Needed to Re-Activate)");
+						}
+						enemy.healShields(5);
+						System.out.println();
 					} else if(!enemy.getPDRepairStatus() && !enemy.getPDState()) {
 						System.out.println("\nREPAIR PD");
 						System.out.println("  The enemy ship doesn't seem to be doing much; suspicious, you observe");
@@ -443,14 +465,19 @@ public class EternalConflict {
 						System.out.println("  again.");
 						System.out.println("    Enemy Point-Defenses Have Been Repaired (One Turn Needed to Re-Activate)");
 						enemy.togglePDRepair();
-					} else if(!enemy.getEngineRepairStatus() && !enemy.getEngineState()) {
+					} else if(!enemy.getEngineRepairStatus() && enemy.getEngineHealth() <= 0) {
 						System.out.println("\nREPAIR ENGINES");
 						System.out.println("  The enemy ship doesn't seem to be doing much; suspicious, you observe");
 						System.out.println("  your opponent more closely. You notice the sparks of welding torches");
 						System.out.println("  clustered towards the rear of their ship; they appear to be repairing");
 						System.out.println("  their engines.");
-						System.out.println("    Enemy Engines Have Been Repaired (One Turn Needed to Re-Activate)");
-						enemy.toggleEngineRepair();
+						System.out.print("    Enemy Engines -  5 Repair");
+						if(!enemy.getEngineState()) {
+							enemy.toggleEngineRepair();
+							System.out.print(" (One Turn Needed to Re-Activate)");
+						}
+						enemy.healEngines(5);
+						System.out.println();
 					} else {
 						System.out.println("    THIS MESSAGE SHOULD NEVER APPEAR");
 					}
@@ -597,11 +624,18 @@ public class EternalConflict {
 		System.out.printf("    Hull    -    %6.2f\n", ship.getHull());
 		System.out.printf("    Heat    -    %6.2f / %6.2f\n", ship.getHeat(), ship.getHeatCapacity());
 		if(!ship.getEngineState()) {
-			System.out.println("    Evasion -      0.00% (Engines Damaged)");
+			System.out.println("    Evasion -      0.00% (Engines Disabled)");
 		} else if(emp) {
-			System.out.println("    Evasion -      0.00% (Engines Paralyzed)");
+			System.out.print("    Evasion -      0.00% ");	System.out.printf("(Subsystem Health - %2d, Engines Paralyzed)\n", ship.getEngineHealth());
 		} else {
-			System.out.printf("    Evasion -    %6.2f", 100 * ship.getEvasion());	System.out.println("%");
+			System.out.printf("    Evasion -    %6.2f", 100 * ship.getEvasion());	System.out.print("%"); System.out.printf(" (Subsystem Health - %2d)\n", ship.getEngineHealth());
+		}
+		if(!ship.getShieldState()) {
+			System.out.println("    Shields -  Disabled");
+		} else if(emp) {
+			System.out.printf("    Shields - Paralyzed  (Subsystem Health - %2d)\n", ship.getShieldHealth());
+		} else {
+			System.out.printf("    Shields -    Active  (Subsystem Health - %2d)\n", ship.getShieldHealth());
 		}
 		if(!ship.getPDState()) {
 			System.out.println("    PD      -  Disabled");
@@ -609,13 +643,6 @@ public class EternalConflict {
 			System.out.println("    PD      - Paralyzed");
 		} else {
 			System.out.println("    PD      -    Active");
-		}
-		if(!ship.getShieldState()) {
-			System.out.println("    Shields -  Disabled");
-		} else if(emp) {
-			System.out.println("    Shields - Paralyzed");
-		} else {
-			System.out.println("    Shields -    Active");
 		}
 		if(ship.hasWeapon("ML") || ship.hasWeapon("CR")) {
 			System.out.printf("    Missile -    %6d\n", ship.getMunitions(0));
@@ -641,16 +668,16 @@ public class EternalConflict {
 			System.out.println("    Shield Projector Paralyzed");
 		} else {
 			if(ship == player) {
-				System.out.println("    Your Shield  -   2.00 Regeneration");
+				System.out.println("    Your Shield   -   2.00 Regeneration");
 			} else {
-				System.out.println("    Enemy Shield -   2.00 Regeneration");
+				System.out.println("    Enemy Shield  -   2.00 Regeneration");
 			}
 		}
 		System.out.println("\nSHIP COOLING");
 		if(ship == player) {
-			System.out.println("    Your Ship    -  -5 Heat");
+			System.out.println("    Your Ship     -  -5 Heat");
 		} else {
-			System.out.println("    Enemy Ship   -  -5 Heat");
+			System.out.println("    Enemy Ship    -  -5 Heat");
 		}
 		applyEnvironmentalEffects(ship);
 		ship.applyStatusEffects();
@@ -678,9 +705,9 @@ public class EternalConflict {
 				System.out.println("  SOLAR FLARE");
 				heatTarget(ship, 8);
 				ship.addStatusEffect("AFBRN", 4);
-				System.out.println("    Effect       -   Afterburn (4 Turns)");
+				System.out.println("    Effect        -   Afterburn (4 Turns)");
 				ship.addStatusEffect("EMPSE", 2);
-				System.out.println("    Effect       -   Electromagnetic Pulse (2 Turns)");
+				System.out.println("    Effect        -   Electromagnetic Pulse (2 Turns)");
 			}
 			break;
 		case "ASTR":
@@ -841,7 +868,7 @@ public class EternalConflict {
 		System.out.println();
 		System.out.print("    3 - Evasive Maneuvers");
 		if(!player.getEngineState()) {
-			System.out.print(" (Engines Damaged)");
+			System.out.print(" (Engines Disabled)");
 		} else if(player.hasStatusEffect("EMPSE")) {
 			System.out.print(" (Engines Paralyzed)");
 		}
@@ -974,7 +1001,7 @@ public class EternalConflict {
 				heatTarget(player, 15);
 				heatTarget(enemy, 6);
 			} else {
-				System.out.println("    Miss         -  Enemy PD Destroyed Missile");
+				System.out.println("    Miss          -  Enemy PD Destroyed Missile");
 				heatTarget(player, 15);
 			}
 			break;
@@ -1024,10 +1051,10 @@ public class EternalConflict {
 				damageShip(target, 0, 4, standardCrit, target.getEvasion(), true, false, false);
 				if(target instanceof Ship && target.getShield() <= 0) {
 					((Ship)target).addStatusEffect("COROS", 3);
-					System.out.println("    Effect       -   Corrosion (3 Turns)");
+					System.out.println("    Effect        -   Corrosion (3 Turns)");
 				}
 			} else {
-				System.out.println("    Miss         -  Enemy PD Destroyed Missile");
+				System.out.println("    Miss          -  Enemy PD Destroyed Missile");
 			}
 			heatTarget(player, 12);
 			break;
@@ -1052,14 +1079,14 @@ public class EternalConflict {
 					heatTarget(player, 10);
 					if(target instanceof Ship) {
 						((Ship)target).addStatusEffect("AFBRN", 3);
-						System.out.println("    Effect       -   Afterburn (3 Turns)");
+						System.out.println("    Effect        -   Afterburn (3 Turns)");
 					}
 				} else {
 					System.out.println("    Miss");
 					heatTarget(player, 10);
 				}
 			} else {
-				System.out.println("    Miss         -  Enemy PD Destroyed Bomb");
+				System.out.println("    Miss          -  Enemy PD Destroyed Bomb");
 				heatTarget(player, 10);
 			}
 			break;
@@ -1075,7 +1102,7 @@ public class EternalConflict {
 			heatTarget(player, 14);
 			if(hit && target.getShield() <= 0 && target instanceof Ship) {
 				((Ship)target).addStatusEffect("EMPSE", 2);
-				System.out.println("    Effect       -   Electromagnetic Pulse (2 Turns)");
+				System.out.println("    Effect        -   Electromagnetic Pulse (2 Turns)");
 			}
 			break;
 		case "DM":
@@ -1117,7 +1144,7 @@ public class EternalConflict {
 					}
 				}
 			} else {
-				System.out.println("    Miss         -  Enemy PD Destroyed Missile");
+				System.out.println("    Miss          -  Enemy PD Destroyed Missile");
 			}
 			heatTarget(player, 12);
 			break;
@@ -1146,7 +1173,7 @@ public class EternalConflict {
 				heatTarget(enemy, 15);
 				heatTarget(player, 6);
 			} else {
-				System.out.println("    Miss         -  Your PD Destroyed Missile");
+				System.out.println("    Miss          -  Your PD Destroyed Missile");
 				heatTarget(enemy, 15);
 			}
 		} else if (player.getEvasion() > environmentalEvasion) {
@@ -1214,9 +1241,9 @@ public class EternalConflict {
 				damage = damage - (shieldTemp / (1 - target.getShieldResist(damageType)));
 				target.setShield(0);
 				if(target == player) {
-					System.out.printf("    Your Shield  -  %5.2f " + type, shieldTemp);
+					System.out.printf("    Your Shield   -  %5.2f " + type, shieldTemp);
 				} else {
-					System.out.printf("    Enemy Shield -  %5.2f " + type, shieldTemp);
+					System.out.printf("    Enemy Shield  -  %5.2f " + type, shieldTemp);
 				}
 				if(crit) {
 					System.out.print(" (Critical)");
@@ -1225,9 +1252,9 @@ public class EternalConflict {
 			} else {
 				target.damageShield(damage, damageType);
 				if(target == player) {
-					System.out.printf("    Your Shield  -  %5.2f " + type, (1 - target.getShieldResist(damageType)) * damage);
+					System.out.printf("    Your Shield   -  %5.2f " + type, (1 - target.getShieldResist(damageType)) * damage);
 				} else {
-					System.out.printf("    Enemy Shield -  %5.2f " + type, (1 - target.getShieldResist(damageType)) * damage);
+					System.out.printf("    Enemy Shield  -  %5.2f " + type, (1 - target.getShieldResist(damageType)) * damage);
 				}
 				if(crit) {
 					System.out.print(" (Critical)");
@@ -1242,9 +1269,9 @@ public class EternalConflict {
 				damage = damage - (target.getArmor() / (1 - target.getArmorResist(damageType)));
 				target.setArmor(0);
 				if(target == player) {
-					System.out.printf("    Your Armor   -  %5.2f " + type, armorTemp);
+					System.out.printf("    Your Armor    -  %5.2f " + type, armorTemp);
 				} else {
-					System.out.printf("    Enemy Armor  -  %5.2f " + type, armorTemp);
+					System.out.printf("    Enemy Armor   -  %5.2f " + type, armorTemp);
 				}
 				if(crit) {
 					System.out.print(" (Critical)");
@@ -1253,9 +1280,9 @@ public class EternalConflict {
 			} else {
 				target.damageArmor(damage, damageType);
 				if(target == player) {
-					System.out.printf("    Your Armor   -  %5.2f " + type, (1 - target.getArmorResist(damageType)) * damage);
+					System.out.printf("    Your Armor    -  %5.2f " + type, (1 - target.getArmorResist(damageType)) * damage);
 				} else {
-					System.out.printf("    Enemy Armor  -  %5.2f " + type, (1 - target.getArmorResist(damageType)) * damage);
+					System.out.printf("    Enemy Armor   -  %5.2f " + type, (1 - target.getArmorResist(damageType)) * damage);
 				}
 				if(crit) {
 					System.out.print(" (Critical)");
@@ -1272,9 +1299,9 @@ public class EternalConflict {
 			}
 			target.damageHull(damage);
 			if(target == player) {
-				System.out.printf("    Your Hull    -  %5.2f " + type, damage);
+				System.out.printf("    Your Hull     -  %5.2f " + type, damage);
 			} else {
-				System.out.printf("    Enemy Hull   -  %5.2f " + type, damage);
+				System.out.printf("    Enemy Hull    -  %5.2f " + type, damage);
 			}
 			if(crit) {
 				System.out.print(" (Critical)");
@@ -1314,25 +1341,41 @@ public class EternalConflict {
 			case "PDF":
 				target.togglePD();
 				if(target == player) {
-					System.out.println("    Your Point-Defenses Have Been Damaged");
+					System.out.println("    Your Point-Defenses Have Been Disabled");
 				} else {
-					System.out.println("    Enemy Point-Defenses Have Been Damaged");
+					System.out.println("    Enemy Point-Defenses Have Been Disabled");
 				}
 				break;
 			case "ENG":
-				target.toggleEngines();
 				if(target == player) {
-					System.out.println("    Your Engines Have Been Damaged");
+					System.out.printf("    Your Engines  -  %2d Damage\n", 1);
 				} else {
-					System.out.println("    Enemy Engines Have Been Damaged");
+					System.out.printf("    Enemy Engines -  %2d Damage\n", 1);
+				}
+				target.damageEngines(1);
+				if(target.getEngineHealth() <= 0) {
+					target.toggleEngines();
+					if(target == player) {
+						System.out.println("    Your Engines Have Been Disabled");
+					} else {
+						System.out.println("    Enemy Engines Have Been Disabled");
+					}
 				}
 				break;
 			case "SHL":
-				target.toggleShields();
 				if(target == player) {
-					System.out.println("    Your Shield Projector Has Been Damaged");
+					System.out.printf("    Your Shields  -  %2d Damage\n", 1);
 				} else {
-					System.out.println("    Enemy Shield Projector Has Been Damaged");
+					System.out.printf("    Enemy Shields -  %2d Damage\n", 1);
+				}
+				target.damageShields(1);
+				if(target.getShieldHealth() <= 0) {
+					target.toggleShields();
+					if(target == player) {
+						System.out.println("    Your Shields Have Been Disabled");
+					} else {
+						System.out.println("    Enemy Shields Have Been Disabled");
+					}
 				}
 				break;
 			}
@@ -1341,10 +1384,10 @@ public class EternalConflict {
 	
 	public void heatTarget(Ship target, double heatAmount) {
 		if(target == player) {
-			System.out.printf("    Your Ship    -  %2.0f Heat", heatAmount);
+			System.out.printf("    Your Ship     -  %2.0f Heat", heatAmount);
 			target.addHeat(heatAmount);
 		} else {
-			System.out.printf("    Enemy Ship   -  %2.0f Heat", heatAmount);
+			System.out.printf("    Enemy Ship    -  %2.0f Heat", heatAmount);
 			target.addHeat(heatAmount);
 		}
 		System.out.println();
@@ -1372,14 +1415,14 @@ public class EternalConflict {
 		}
 		System.out.println();
 		System.out.print("    3 - Engines");
-		if(player.getEngineState()) {
+		if(player.getEngineState() && player.getEngineHealth() >= player.getEngineMaxHealth()) {
 			System.out.print(" (No Repairs Needed)");
 		}  else {
 			damagedSubsystems += "3";
 		}
 		System.out.println();
 		System.out.print("    4 - Shield Projector");
-		if(player.getShieldState()) {
+		if(player.getShieldState() && player.getShieldHealth() >= player.getEngineMaxHealth()) {
 			System.out.print(" (No Repairs Needed)");
 		}  else {
 			damagedSubsystems += "4";

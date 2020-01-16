@@ -21,8 +21,8 @@ public class Ship extends Craft {
 	private ArrayList<StatusEffect> effects;
 	private double chanceToFail;
 	
-	public Ship(boolean isPlayerI, double hullI, double armorI, double shieldI, double shieldRegenI, double[] armorResistI, double[] shieldResistI, double evasionI, double heatCapacityI, double coolingAmountI, int[] munitionsI, String[] weaponsI) {
-		super(hullI, armorI, shieldI, shieldRegenI, armorResistI, shieldResistI, evasionI);
+	public Ship(boolean isPlayerI, double hullI, double armorI, double shieldI, double shieldRegenI, double[] armorResistI, double[] shieldResistI, double evasionI, double heatCapacityI, double coolingAmountI, int[] munitionsI, String[] weaponsI, int engineHealthI, int shieldHealthI) {
+		super(hullI, armorI, shieldI, shieldRegenI, armorResistI, shieldResistI, evasionI, engineHealthI, shieldHealthI);
 		isPlayer = isPlayerI;
 		isDodging = false;
 		pdActive = true;
@@ -137,7 +137,7 @@ public class Ship extends Craft {
 	public void setDrones(int droneCount) {
 		drones.clear();
 		for(int i = 0; i < droneCount; i++) {
-			drones.add(new Drone(1, 2, 0, 0, new double[] {0, .25, .5, 0}, new double[] {.5, .25, 0, 0}, .75));
+			drones.add(new Drone(1, 2, 0, 0, new double[] {0, .25, .5, 0}, new double[] {.5, .25, 0, 0}, .75, 10, 10));
 		}
 	}
 	
@@ -197,7 +197,7 @@ public class Ship extends Craft {
 		
 		for(int i = 0; i < effects.size(); i++) {
 			applyEffect(effects.get(i).getType());
-			System.out.printf("    Turns Left   -  %2d\n", effects.get(i).getTurns() - 1);
+			System.out.printf("    Turns Left    -  %2d\n", effects.get(i).getTurns() - 1);
 			effects.get(i).decrementTurns();
 			if(effects.get(i).getTurns() <= 0) {
 				revertEffect(effects.get(i).getType());
@@ -284,9 +284,9 @@ public class Ship extends Craft {
 				damage = damage - (shieldTemp / (1 - target.getShieldResist(damageType)));
 				target.setShield(0);
 				if(isPlayer) {
-					System.out.printf("    Your Shield  -  %5.2f " + type, shieldTemp);
+					System.out.printf("    Your Shield   -  %5.2f " + type, shieldTemp);
 				} else {
-					System.out.printf("    Enemy Shield -  %5.2f " + type, shieldTemp);
+					System.out.printf("    Enemy Shield  -  %5.2f " + type, shieldTemp);
 				}
 				if(crit) {
 					System.out.print(" (Critical)");
@@ -295,9 +295,9 @@ public class Ship extends Craft {
 			} else {
 				target.damageShield(damage, damageType);
 				if(isPlayer) {
-					System.out.printf("    Your Shield  -  %5.2f " + type, (1 - target.getShieldResist(damageType)) * damage);
+					System.out.printf("    Your Shield   -  %5.2f " + type, (1 - target.getShieldResist(damageType)) * damage);
 				} else {
-					System.out.printf("    Enemy Shield -  %5.2f " + type, (1 - target.getShieldResist(damageType)) * damage);
+					System.out.printf("    Enemy Shield  -  %5.2f " + type, (1 - target.getShieldResist(damageType)) * damage);
 				}
 				if(crit) {
 					System.out.print(" (Critical)");
@@ -312,9 +312,9 @@ public class Ship extends Craft {
 				damage = damage - (target.getArmor() / (1 - target.getArmorResist(damageType)));
 				target.setArmor(0);
 				if(isPlayer) {
-					System.out.printf("    Your Armor   -  %5.2f " + type, armorTemp);
+					System.out.printf("    Your Armor    -  %5.2f " + type, armorTemp);
 				} else {
-					System.out.printf("    Enemy Armor  -  %5.2f " + type, armorTemp);
+					System.out.printf("    Enemy Armor   -  %5.2f " + type, armorTemp);
 				}
 				if(crit) {
 					System.out.print(" (Critical)");
@@ -323,9 +323,9 @@ public class Ship extends Craft {
 			} else {
 				target.damageArmor(damage, damageType);
 				if(isPlayer) {
-					System.out.printf("    Your Armor   -  %5.2f " + type, (1 - target.getArmorResist(damageType)) * damage);
+					System.out.printf("    Your Armor    -  %5.2f " + type, (1 - target.getArmorResist(damageType)) * damage);
 				} else {
-					System.out.printf("    Enemy Armor  -  %5.2f " + type, (1 - target.getArmorResist(damageType)) * damage);
+					System.out.printf("    Enemy Armor   -  %5.2f " + type, (1 - target.getArmorResist(damageType)) * damage);
 				}
 				if(crit) {
 					System.out.print(" (Critical)");
@@ -335,9 +335,9 @@ public class Ship extends Craft {
 			}
 			target.damageHull(damage);
 			if(isPlayer) {
-				System.out.printf("    Your Hull    -  %5.2f " + type, damage);
+				System.out.printf("    Your Hull     -  %5.2f " + type, damage);
 			} else {
-				System.out.printf("    Enemy Hull   -  %5.2f " + type, damage);
+				System.out.printf("    Enemy Hull    -  %5.2f " + type, damage);
 			}
 			if(crit) {
 				System.out.print(" (Critical)");
@@ -352,10 +352,10 @@ public class Ship extends Craft {
 	
 	public void heatTarget(Ship target, double heatAmount) {
 		if(isPlayer) {
-			System.out.printf("    Your Ship    -  %2.0f Heat", heatAmount);
+			System.out.printf("    Your Ship     -  %2.0f Heat", heatAmount);
 			target.addHeat(heatAmount);
 		} else {
-			System.out.printf("    Enemy Ship   -  %2.0f Heat", heatAmount);
+			System.out.printf("    Enemy Ship    -  %2.0f Heat", heatAmount);
 			target.addHeat(heatAmount);
 		}
 		System.out.println();

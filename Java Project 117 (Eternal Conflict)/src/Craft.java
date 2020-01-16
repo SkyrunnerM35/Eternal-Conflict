@@ -18,11 +18,15 @@ public abstract class Craft {
 	private double originalEvasion;
 	private double[] maxHealth;
 	private boolean engineState;
+	private int engineHealth;
+	private int maxEngineHealth;
 	private boolean enginesJustRepaired;
 	private boolean shieldState;
+	private int shieldHealth;
+	private int maxShieldHealth;
 	private boolean shieldsJustRepaired;
 	
-	public Craft(double hullI, double armorI, double shieldI, double shieldRegenI, double[] armorResistI, double [] shieldResistI, double evasionI) {
+	public Craft(double hullI, double armorI, double shieldI, double shieldRegenI, double[] armorResistI, double [] shieldResistI, double evasionI, int engineHealthI, int shieldHealthI) {
 		hull = hullI;
 		armor = armorI;
 		shield = shieldI;
@@ -36,8 +40,12 @@ public abstract class Craft {
 		originalEvasion = evasionI;
 		maxHealth = new double[] {hullI, armorI, shieldI};
 		engineState = true;
+		engineHealth = engineHealthI;
+		maxEngineHealth = engineHealthI;
 		enginesJustRepaired = false;
 		shieldState = true;
+		shieldHealth = shieldHealthI;
+		maxShieldHealth = shieldHealthI;
 		shieldsJustRepaired = false;
 	}
 	
@@ -216,6 +224,54 @@ public abstract class Craft {
 		if(shieldsJustRepaired && !getShieldState()) {
 			toggleShields();
 			toggleShieldRepair();
+		}
+	}
+	
+	public int getEngineHealth() {
+		return engineHealth;
+	}
+	
+	public int getEngineMaxHealth() {
+		return maxEngineHealth;
+	}
+ 	
+	public void setEngineHealth(int newPDHealth) {
+		engineHealth = newPDHealth;
+	}
+	
+	public void damageEngines(int damage) {
+		engineHealth -= damage;
+	}
+	
+	public void healEngines(int healAmount) {
+		if(engineHealth + healAmount > maxEngineHealth) {
+			engineHealth = maxEngineHealth;
+		} else {
+			engineHealth += healAmount;
+		}
+	}
+	
+	public int getShieldHealth() {
+		return shieldHealth;
+	}
+	
+	public int getShieldMaxHealth() {
+		return maxShieldHealth;
+	}
+	
+	public void setShieldHealth(int newPDHealth) {
+		shieldHealth = newPDHealth;
+	}
+	
+	public void damageShields(int damage) {
+		shieldHealth -= damage;
+	}
+	
+	public void healShields(int healAmount) {
+		if(shieldHealth + healAmount > maxShieldHealth) {
+			shieldHealth = maxShieldHealth;
+		} else {
+			shieldHealth += healAmount;
 		}
 	}
 	
